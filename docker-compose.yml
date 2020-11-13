@@ -1,0 +1,49 @@
+version: '3.4'
+
+services:
+  api:
+    image: obid-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    # environment:
+    #   NODE_ENV: production
+    volumes:
+      - ./app.js:/usr/src/app/app.js
+      - ./config:/usr/src/app/config
+      - ./app:/usr/src/app/app
+    networks: 
+      - backend
+    ports:
+      - 3000:3000
+    command: npm run dev
+
+  db:
+    image: mysql:5.7.26
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: db
+    ports: 
+        - '3306:3306'
+    environment: 
+        MYSQL_DATABASE: 'obid'
+        MYSQL_USER: 'root'
+        MYSQL_PASSWORD: 'password'
+        MYSQL_ROOT_PASSWORD: 'password'
+    expose: 
+        - '3306'
+    networks: 
+        - frontend
+    volumes: 
+        - dbdata:/var/lib/mysql
+        - ./settings/mysql/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
+    # command: ["./wait-for-it.sh","mysql:3306"]
+
+volumes: 
+    dbdata:
+        driver: local
+
+networks:
+    backend:
+        driver: bridge
+    frontend:

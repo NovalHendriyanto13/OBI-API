@@ -1,0 +1,22 @@
+{
+  "name": "obi_api",
+  "version": "1.0.0",
+  "description": "Otobid API Application",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon -L app.js"
+  },
+  "author": "Noval Hendriyanto",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.6",
+    "dotenv": "^8.2.0",
+    "mysql2" : "^2.2.5",
+    "body-parser": "1.19.0",
+    "bcrypt": "5.0.0",
+    "redis": "3.0.2",
+    "jsonwebtoken": "8.5.1"
+  }
+}
