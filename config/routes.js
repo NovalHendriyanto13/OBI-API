@@ -1,7 +1,11 @@
 module.exports = function(app, config) {
     const user = require(config.controller_path + '/authentication/User')
+    const consignor = require(config.controller_path + '/masters/Consignor')
+    const unit = require(config.controller_path + '/masters/Unit')
     const routes = {
-        user : new user()
+        user : new user(),
+        consignor : new consignor(),
+        unit : new unit()
     }
 
     for (x in routes) {

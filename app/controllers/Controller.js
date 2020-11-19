@@ -6,12 +6,16 @@ const connectDB = require(path.resolve('config/database'))
 const util = require(path.resolve('app/utils/util'))
 
 class Controller {
+
     async index(req, res) {
         try{
-            if (!util.authenticate(req, res)) {
-                res.send(this.response(false, null, 'You are not authenticate!'))
-            }
+            const token = util.authenticate(req, res)
             const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.detail')
+            if (access === false) {
+                res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
             let m = await model.getAll()
             res.send(this.response(true, m, null))
         }
@@ -26,7 +30,13 @@ class Controller {
 
     async detail(req, res) {
         try {
+            const token = util.authenticate(req, res)
             const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.detail')
+            if (access === false) {
+                res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
             let params = req.params
             let id = params.id
             let m = await model.getId(id)
