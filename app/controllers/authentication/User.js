@@ -96,7 +96,43 @@ class User extends Controller {
     }
 
     async logout(req, res) {
-        
+
+    }
+
+    defaultFields() {
+        this.defaultFields = {
+            NoNPWP:'',
+            TempatLahir:'',
+            TglLahir:'',
+            Bank:'',
+            Cabang:'',
+            NoRek:'',
+            AtasNama :'',
+            PICConsignor:'',
+            PICOtobid:'',
+            Ketmob:'',
+            Ketpar:'',
+            TipeKomisi:'',
+            Komisi:'',
+            StartMOU:'',
+            EndMOU:'',
+            TypeMOU:'',
+            NoPKS:'',
+            StartPKS:'',
+            EndPKS:'',
+            Foto:'',
+            FKTP:'',
+            FNPWP:'',
+            FTDP:'',
+            FSPK:'',
+            FSKPL:'',
+            Kode_consignor:'',
+            Last_update:'',
+            FSIUP:'',
+            FAKTE:'',
+            FDOMISILI:''
+        }
+        return this.defaultFields
     }
 }
 

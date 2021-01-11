@@ -40,11 +40,15 @@ class Model {
         let field = ""
         let values = ""
 
+        this.defaultFields()
+
         for (let key in params) {
+
             field = field + key + ', '
             values = values + '?, '
             data.push(params[key])
         }
+
         let fieldSubstr = (field.length) - 2
         let valueSubstr = (values.length) - 2
         q = q + "("+ field.substr(0, fieldSubstr) +") values (" + values.substring(0, valueSubstr) +")"
@@ -59,6 +63,10 @@ class Model {
         let [rows, fields] = await db.execute(q)
         return rows
     } 
+
+    defaultFields() {
+        return this.defaults
+    }
 }
 
 module.exports = Model
