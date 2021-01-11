@@ -36,19 +36,21 @@ class Model {
 
     async insert(params) {
         let data = []
-        const q = "insert into " + this.tablename
-        let fields = ""
+        let q = "insert into " + this.tablename
+        let field = ""
         let values = ""
+
         for (let key in params) {
-            fields = fields + key + ', '
-            values = values + '? ,'
+            field = field + key + ', '
+            values = values + '?, '
             data.push(params[key])
         }
-        q = q + "("+ fields.substr(0, -1) +") values (" + values.substr(0, -1) +")"
-        console.log(q)
-
+        let fieldSubstr = (field.length) - 2
+        let valueSubstr = (values.length) - 2
+        q = q + "("+ field.substr(0, fieldSubstr) +") values (" + values.substring(0, valueSubstr) +")"
+        
         const db = await conn.db()
-        let [rows, fields] = await db.execute(q + condition, data)
+        let [rows, fields] = await db.execute(q, data)
         return rows
     }
 

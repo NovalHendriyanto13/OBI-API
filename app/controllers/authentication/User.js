@@ -42,7 +42,7 @@ class User extends Controller {
                 token: token,
                 expire_in: expireIn
             }
-            res.send(that.response(200, responseToken, null))
+            res.send(that.response(true, responseToken, null))
         }
         catch(err) {
             console.log(err)
@@ -73,9 +73,18 @@ class User extends Controller {
 
             let process = await model.insert(data)
 
-            res.send(that.response(200, [
-                
-            ], null))
+            const expireIn = 1*60*60
+            let token = util.generateToken(dataUser, expireIn);
+            let responseToken = {
+                data: {
+                    email: m[0].Email,
+                    name: m[0].Nama,
+                    group: 'user'
+                }, 
+                token: token,
+                expire_in: expireIn
+            }
+            res.send(that.response(true, responseToken, null))
         }
         catch(err) {
             console.log(err)
@@ -84,6 +93,10 @@ class User extends Controller {
                 message: err.message
             }))
         } 
+    }
+
+    async logout(req, res) {
+        
     }
 }
 
