@@ -21,7 +21,12 @@ module.exports = function(app, config) {
 
     // other routes
     app.post('/login', (req, res)=> {
-        let model = new user()
-        model.login(req, res)
+        let controller = new user()
+        controller.login(req, res)
+    })
+
+    app.post('/register', (req, res)=> {
+        let controller = new user()
+        controller.register(req, res)
     })
 }
