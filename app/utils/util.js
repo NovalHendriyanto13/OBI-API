@@ -56,4 +56,21 @@ let scanDir = async function (dir, results = []) {
     return results;
 }
 
-module.exports = {generateToken, authenticate, permission, scanDir}
+let dateNow = function() {
+  var currentdate = new Date(); 
+  return currentdate.getFullYear() + "-"
+    + (currentdate.getMonth()+1)  + "-" 
+    + currentdate.getDate() + " "  
+    + currentdate.getHours() + ":"  
+    + currentdate.getMinutes() + ":" 
+    + currentdate.getSeconds();
+
+}
+
+module.exports = {
+  generateToken, 
+  authenticate, 
+  permission, 
+  scanDir, 
+  dateNow
+}

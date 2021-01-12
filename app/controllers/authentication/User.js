@@ -72,13 +72,19 @@ class User extends Controller {
             }
 
             let process = await model.insert(data)
-
+            let dataUser = {
+                userid: process.insertId,
+                username: '',
+                email: data.Email,
+                group: 'user'
+            }
+            
             const expireIn = 1*60*60
             let token = util.generateToken(dataUser, expireIn);
             let responseToken = {
                 data: {
-                    email: m[0].Email,
-                    name: m[0].Nama,
+                    email: data.Email,
+                    name: data.Nama,
                     group: 'user'
                 }, 
                 token: token,
@@ -97,42 +103,6 @@ class User extends Controller {
 
     async logout(req, res) {
 
-    }
-
-    defaultFields() {
-        this.defaultFields = {
-            NoNPWP:'',
-            TempatLahir:'',
-            TglLahir:'',
-            Bank:'',
-            Cabang:'',
-            NoRek:'',
-            AtasNama :'',
-            PICConsignor:'',
-            PICOtobid:'',
-            Ketmob:'',
-            Ketpar:'',
-            TipeKomisi:'',
-            Komisi:'',
-            StartMOU:'',
-            EndMOU:'',
-            TypeMOU:'',
-            NoPKS:'',
-            StartPKS:'',
-            EndPKS:'',
-            Foto:'',
-            FKTP:'',
-            FNPWP:'',
-            FTDP:'',
-            FSPK:'',
-            FSKPL:'',
-            Kode_consignor:'',
-            Last_update:'',
-            FSIUP:'',
-            FAKTE:'',
-            FDOMISILI:''
-        }
-        return this.defaultFields
     }
 }
 

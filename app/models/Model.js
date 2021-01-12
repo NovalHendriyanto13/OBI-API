@@ -40,19 +40,33 @@ class Model {
         let field = ""
         let values = ""
 
-        this.defaultFields()
+        const defaultField = this.defaultFields()
+        if (Object.keys(defaultField).length === 0 && defaultField.constructor === Object) {
+            for (let key in params) {
+                field = field + key + ', '
+                values = values + '?, '
+                data.push(params[key])
+            }
+        }
+        else {
+            let paramValue
+            for (let key in defaultField) {
+                field = field + key + ', '
+                values = values + '?, '
+                paramValue = params[key]
 
-        for (let key in params) {
+                if (typeof(paramValue) === 'undefined') {
+                    paramValue = defaultField[key]
+                }
 
-            field = field + key + ', '
-            values = values + '?, '
-            data.push(params[key])
+                data.push(paramValue)
+            }
         }
 
         let fieldSubstr = (field.length) - 2
         let valueSubstr = (values.length) - 2
         q = q + "("+ field.substr(0, fieldSubstr) +") values (" + values.substring(0, valueSubstr) +")"
-        
+
         const db = await conn.db()
         let [rows, fields] = await db.execute(q, data)
         return rows
@@ -65,7 +79,7 @@ class Model {
     } 
 
     defaultFields() {
-        return this.defaults
+        return {}
     }
 }
 
