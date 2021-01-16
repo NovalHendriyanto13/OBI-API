@@ -6,11 +6,13 @@ const helper = require(path.resolve('app/utils/helper'))
 
 const Controller = require(config.controller_path + '/Controller')
 const auctionModel = require(config.model_path + '/m_auction')
+const auctionRepo = require(path.resolve('app/repositories/auction_repo'))
 
 class Auction extends Controller {
     constructor() {
         super()
         this.setModel(new auctionModel())
+        this.auctionRepo = new auctionRepo()
     }
 
     async index(req, res) {
@@ -27,13 +29,7 @@ class Auction extends Controller {
             const cDate2 = new Date(cDate1.getTime() + 7 * 24 * 60 * 60 * 1000)
             const date2 = helper.convertDate(cDate2) + " " + helper.convertTime(cDate2)
 
-            const q = "SELECT IdAuctions, IdWilayah, TglAuctions FROM " + model.tablename
-                + " WHERE StartTime >= '" + date1 + "'"
-                + " AND EndTime <= '" + date2 + "'"
-                + " ORDER BY TglAuctions ASC"
-
-            console.log(q)
-            let m = await model.raw(q)
+            let m = await this.auctionRepo.getAuction(date1, date2)
             
             res.send(this.response(true, m, null))
         }

@@ -5,6 +5,7 @@ const conn = require(path.resolve('config/database'))
 class Model {
     constructor() {
         this.tablename
+        this.primaryKey = 'id'
     }
     async getAll() {
         const db = await conn.db()
@@ -14,7 +15,7 @@ class Model {
 
     async getId(id) {
         const db = await conn.db()
-        let [rows, fields] = await db.execute("select * from "+this.tablename+" where id=?",[id])
+        let [rows, fields] = await db.execute("select * from "+this.tablename+" where "+this.primaryKey+" =?",[id])
         return rows
     }
 

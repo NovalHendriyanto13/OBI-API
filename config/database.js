@@ -12,3 +12,10 @@ module.exports.db = async() => {
         port: config.db.port
     })
 }
+
+module.exports.tables = {
+    user : 'ms_users',
+    auction : 'ms_auctions',
+    auction_detail : 'ms_auctions_unit'
+
+}
