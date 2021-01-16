@@ -5,7 +5,6 @@ const fs = require('fs')
 const readdirp = promisify(fs.readdir)
 const statp = promisify(fs.stat)
 const config = require(path.resolve('config/config'))
-const permissionModel = require(config.model_path + '/m_permission')
 const userModel = require(config.model_path + '/m_user')
 
 let generateToken = function(params, expiresIn) {
@@ -24,22 +23,10 @@ let permission = async function (token, page) {
     let user = await users.get({username : token.username, email: token.email})
     let groupId = 0
     if (user.length > 0){
-      groupId = user[0].group_id
-    }
-    if (groupId == '1'){
       return true
     }
 
-    const access = new permissionModel()
-    let q = "select * from " + access.tablename + " AS a "
-      q = q + "join modules AS b on a.module_id = b.id "
-      q = q + "where b.initial ='" + page +"' and a.group_id ='" + groupId + "'"
-
-    let a = await access.raw(q)
-    if (a.length <= 0)
-      return false
-
-    return true
+    return false
 }
 
 let scanDir = async function (dir, results = []) {
@@ -56,21 +43,9 @@ let scanDir = async function (dir, results = []) {
     return results;
 }
 
-let dateNow = function() {
-  var currentdate = new Date(); 
-  return currentdate.getFullYear() + "-"
-    + (currentdate.getMonth()+1)  + "-" 
-    + currentdate.getDate() + " "  
-    + currentdate.getHours() + ":"  
-    + currentdate.getMinutes() + ":" 
-    + currentdate.getSeconds();
-
-}
-
 module.exports = {
   generateToken, 
   authenticate, 
   permission, 
   scanDir, 
-  dateNow
 }

@@ -6,7 +6,7 @@ class Model {
     constructor() {
         this.tablename
     }
-    async getAll(filter) {
+    async getAll() {
         const db = await conn.db()
         let [rows, fields] = await db.execute("select * from "+this.tablename)
         return rows

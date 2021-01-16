@@ -1,11 +1,14 @@
 module.exports = function(app, config) {
     const user = require(config.controller_path + '/authentication/User')
-    const consignor = require(config.controller_path + '/masters/Consignor')
     const unit = require(config.controller_path + '/masters/Unit')
+    const area = require(config.controller_path + '/masters/Area')
+    const auction = require(config.controller_path + '/auction/Auction')
+
     const routes = {
         user : new user(),
-        consignor : new consignor(),
-        unit : new unit()
+        unit : new unit(),
+        area: new area(),
+        auction : new auction()
     }
 
     for (x in routes) {
