@@ -19,7 +19,7 @@ class Auction extends Controller {
         try{
             const token = util.authenticate(req, res)
             const model = this.getModel()
-            const access = await util.permission(token, model.tablename + '.detail')
+            const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
                 res.send(this.response(false, null, 'You are not authorized!'))
             }

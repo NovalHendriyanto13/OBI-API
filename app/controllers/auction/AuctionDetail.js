@@ -24,7 +24,9 @@ class AuctionDetail extends Controller {
             
             let params = req.params
             let id = params.id
-            let m = await model.getId(id)
+
+            let m = await model.select()
+                m = await m.getId(id)
             
             res.send(this.response(true, m, null))
         }

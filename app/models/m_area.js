@@ -9,7 +9,6 @@ class Area extends Model {
         super()
         this.tablename = 'ms_wilayah'
     }
-
 }
 
 module.exports = Area

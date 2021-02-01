@@ -14,8 +14,7 @@ module.exports.db = async() => {
 }
 
 module.exports.tables = {
-    user : 'ms_users',
+    user : 'ms_user',
     auction : 'ms_auctions',
     auction_detail : 'ms_auctions_unit'
-
 }

@@ -1,4 +1,5 @@
 'use strict'
+const { type } = require('os')
 const path = require('path')
 const conn = require(path.resolve('config/database'))
 
@@ -77,7 +78,24 @@ class Model {
         const db = await conn.db()
         let [rows, fields] = await db.execute(q)
         return rows
-    } 
+    }
+
+    async select(column) {
+        // if (typeof(column) == 'undefined') {
+        //     return '*'
+        // }
+        // if (typeof(column) == 'string') {
+        //     return column
+        // }
+        // if (typeof(column) == 'object') {
+        //     // return column.join(', ')
+        // }
+        return this
+    }
+    
+    join(table, relation, type='inner') {
+
+    }
 
     defaultFields() {
         return {}

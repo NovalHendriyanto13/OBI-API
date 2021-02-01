@@ -21,7 +21,6 @@ let permission = async function (token, page) {
     const users = new userModel()
 
     let user = await users.get({username : token.username, email: token.email})
-    let groupId = 0
     if (user.length > 0){
       return true
     }

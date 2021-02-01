@@ -1,14 +1,15 @@
 'use strict'
 const path = require('path')
 const config = require(path.resolve('config/config'))
-const util = require(path.resolve('app/utils/util'))
+const table = require(path.resolve('config/database')).tables
 
 const Model = require(config.model_path + '/Model')
 
 class User extends Model {
     constructor() {
         super()
-        this.tablename = 'ms_user'
+        this.tablename = table.user
+        this.primaryKey = 'UserID'
     }
 
     defaultFields() {
