@@ -7,6 +7,7 @@ const config = {
     app_path: path.resolve('app'),
     controller_path: path.resolve('app/controllers'),
     model_path: path.resolve('app/models'),
+    repo_path: path.resolve('app/repositories'),
     db : {
         host: process.env.DB_HOST,
         name: process.env.DB_NAME,

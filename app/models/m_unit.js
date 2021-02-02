@@ -1,13 +1,14 @@
 'use strict'
 const path = require('path')
-const conn = require(path.resolve('config/database'))
+const table = require(path.resolve('config/database')).tables
 const config = require(path.resolve('config/config'))
 const Model = require(config.model_path + '/Model')
 
 class Unit extends Model{
     constructor() {
         super()
-        this.tablename = 'ms_unit'
+        this.tablename = table.unit
+        this.primaryKey = 'IdUnit'
     }
 }
 

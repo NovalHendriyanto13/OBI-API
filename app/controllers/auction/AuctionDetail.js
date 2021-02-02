@@ -6,6 +6,7 @@ const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
 const auctionDetailModel = require(config.model_path + '/m_auction_detail')
+const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
 
 class AuctionDetail extends Controller {
     constructor() {
@@ -25,8 +26,8 @@ class AuctionDetail extends Controller {
             let params = req.params
             let id = params.id
 
-            let m = await model.select()
-                m = await m.getId(id)
+            const r = new auctionDetailRepo()
+            let m = await r.getAuctionDetail(id)
             
             res.send(this.response(true, m, null))
         }

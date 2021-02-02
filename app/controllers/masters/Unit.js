@@ -24,12 +24,8 @@ class Unit extends Controller {
             
             let params = req.params
             let id = params.id
-            let q = "Select a.*, b.original_path, b.thumb_path From " + model.tablename +" AS a "
-                q = q + "Left Join gallery AS b On a.id = b.table_id And b.tablename = '" + model.tablename+"' "
-                q = q + "Where a.id = " + id
-            let m = await model.raw(q)
+            let m = await model.getId(id)
             
-            // let scanDir
             res.send(this.response(true, m, null))
         }
         catch (err) {
