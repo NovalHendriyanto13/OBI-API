@@ -25,6 +25,10 @@ module.exports = function(app, config) {
     }
 
     // other routes
+    app.get('/', (req, res)=> {
+        res.send('Welcome To Otobid API')
+    })
+
     app.post('/login', (req, res)=> {
         let controller = new user()
         controller.login(req, res)
