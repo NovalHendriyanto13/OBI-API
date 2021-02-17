@@ -27,6 +27,16 @@ let permission = async function (token, page) {
 
     return false
 }
+let staticToken = function (req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (config.exception.token === token) {
+        return true
+    }
+
+    return false
+}
 
 let scanDir = async function (dir, results = []) {
   let files = await readdirp(directoryName);
@@ -47,4 +57,5 @@ module.exports = {
   authenticate, 
   permission, 
   scanDir, 
+  staticToken
 }

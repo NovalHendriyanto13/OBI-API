@@ -15,6 +15,9 @@ const config = {
         user: process.env.DB_USER,
         pass: process.env.DB_PASSWORD
     },
-    token_secret: process.env.TOKEN_SECRET
+    token_secret: process.env.TOKEN_SECRET,
+    exception: {
+        token: '1cd855fd3f461fd5f6f15638d02ff689cf86fe7c'
+    }
 }
 module.exports = config
