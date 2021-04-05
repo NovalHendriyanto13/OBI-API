@@ -68,8 +68,12 @@ class User extends Controller {
                 Email: params.email,
                 NoTelp: params.phone_no,
                 NoKTP: params.identity_no,
+                NoNPWP: params.npwp_no,
                 Alamat: params.address,
-                Password: params.password
+                Bank: params.bank,
+                Cabang: params.branch_bank,
+                NoRek: params.account_no,
+                AtasNama : params.account_name,
             }
 
             let process = await model.insert(data)
@@ -102,17 +106,45 @@ class User extends Controller {
         } 
     }
 
-    async logout(req, res) {
-        const expireIn = 1*60
-        const user = util.authenticate(req, res)
-        let dataUser = {
-            userid: user.userid,
-            username: user.username,
-            email: user.email,
-            group: user.group
+    async update(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.update')
+            if (access === false) {
+                res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            var id = req.params.id
+
+            let data = {
+                Nama: params.name,
+                Email: params.email,
+                NoTelp: params.phone_no,
+                NoKTP: params.identity_no,
+                NoNPWP: params.npwp_no,
+                Alamat: params.address,
+                Bank: params.bank,
+                Cabang: params.branch_bank,
+                NoRek: params.account_no,
+                AtasNama : params.account_name,
+            }
+            
+            let update = await model.update(data, token.userid)
+            if (update)
+                res.send(this.response(true, "Update Profile is Success", null))
+
+            res.send(this.response(false, null, "Update Profile is Failed"))
+            
         }
-        let token = util.generateToken(dataUser, expireIn);
-        res.send(this.response(true, token, null))
+        catch(err) {
+            console.log(err)
+            res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
     }
 
     async changePassword(req, res) {
@@ -125,6 +157,7 @@ class User extends Controller {
             }
             
             var params = req.body
+            
             const rules = {
                 old_password: 'required|numeric',
                 password: 'required',
@@ -132,8 +165,8 @@ class User extends Controller {
             }
             const validation = new Validation();
             let validate = validation.check(params, rules)
-            if (validate) {
-                res.send(this.response(false, null, validate))
+            if (validate.length > 0) {
+                throw new Error(validate.toString())
             }
             let m = await model.getId(token.userid)
             
@@ -142,8 +175,8 @@ class User extends Controller {
 
             if (params.password !== params.re_password)
                 throw new Error('Password is not match')
-
-            let update = model.update({Password: params.password}, token.userid)
+                
+            let update = await model.update({Password: params.password}, token.userid)
             if (update)
                 res.send(this.response(true, "Change Password is Success", null))
 
@@ -151,7 +184,7 @@ class User extends Controller {
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))

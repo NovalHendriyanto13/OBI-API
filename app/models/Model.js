@@ -82,35 +82,16 @@ class Model {
     async update(params, id) {
         let data = []
         let q = "update " + this.tablename + " set "
-        let field = ""
         let values = ""
 
-        const defaultField = this.defaultFields()
-        if (Object.keys(defaultField).length === 0 && defaultField.constructor === Object) {
-            for (let key in params) {
-                field = field + key + ', '
-                values = values + '?, '
-                data.push(params[key])
-            }
-        }
-        else {
-            let paramValue
-            for (let key in defaultField) {
-                field = field + key + ', '
-                values = values + '?, '
-                paramValue = params[key]
-
-                if (typeof(paramValue) === 'undefined') {
-                    paramValue = defaultField[key]
-                }
-
-                data.push(paramValue)
-            }
+        for (let key in params) {
+            values = values + key + ' = ?, '
+            data.push(params[key])
         }
 
-        let fieldSubstr = (field.length) - 2
         let valueSubstr = (values.length) - 2
-        q = q + "("+ field.substr(0, fieldSubstr) +") values (" + values.substring(0, valueSubstr) +")"
+        q = q +  values.substring(0, valueSubstr)
+        q = q + " WHERE " + this.primaryKey + " = " + id
 
         const db = await conn.db()
         let [rows, fields] = await db.execute(q, data)

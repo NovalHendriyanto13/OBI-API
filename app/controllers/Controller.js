@@ -15,8 +15,17 @@ class Controller {
             if (access === false) {
                 res.send(this.response(false, null, 'You are not authorized!'))
             }
+
+            let m
+            let params = req.body
             
-            let m = await model.getAll()
+            if (params !== null) {
+                m = await model.get(params)
+            }
+            else {
+                m = await model.getAll()
+            }
+
             res.send(this.response(true, m, null))
         }
         catch(err) {
@@ -50,6 +59,33 @@ class Controller {
                 message: err.message
             }))
         }
+    }
+
+    async update(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.update')
+            if (access === false) {
+                res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            var id = req.params.id
+
+            if (params === null || id === null) {
+                throw new Error('Parameters is Required')
+            }
+
+            res.send(this.response(true, 'Update Module is ready',null))
+        }
+        catch(err) {
+            console.log(err)
+            res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
     }
 
     response(status, data, message) {

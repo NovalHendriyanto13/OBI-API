@@ -18,5 +18,7 @@ module.exports.tables = {
     auction : 'ms_auctions',
     auction_detail : 'ms_auctions_unit',
     unit : 'ms_unit',
-    area : 'ms_wilayah'
+    area : 'ms_wilayah',
+    npl : 'ms_npl',
+    brand : 'ms_merk'
 }

@@ -1,5 +1,3 @@
-const Article = require("../app/controllers/article/Article")
-
 module.exports = function(app, config) {
     const user = require(config.controller_path + '/authentication/User')
     const unit = require(config.controller_path + '/masters/Unit')
@@ -7,6 +5,8 @@ module.exports = function(app, config) {
     const auction = require(config.controller_path + '/auction/Auction')
     const auctionDetail = require(config.controller_path + '/auction/AuctionDetail')
     const article = require(config.controller_path + '/article/Article')
+    const npl = require(config.controller_path + '/auction/Npl')
+    const brand = require(config.controller_path + '/masters/Brand')
 
     const routes = {
         user : new user(),
@@ -14,7 +14,9 @@ module.exports = function(app, config) {
         area: new area(),
         auction : new auction(),
         auction_detail : new auctionDetail(),
-        article : new Article()
+        article : new article(),
+        npl : new npl(),
+        brand : new brand()
     }
 
     for (x in routes) {
@@ -23,6 +25,11 @@ module.exports = function(app, config) {
         app.post('/' + route, (req, res)=>{
             c.index(req, res)
         })
+        
+        app.post('/' + route + '/update' + '/:id' , (req, res)=> {
+            c.update(req, res)
+        })
+
         app.post('/' + route + '/:id', (req, res)=>{
             c.detail(req, res)
         })
@@ -37,11 +44,6 @@ module.exports = function(app, config) {
     app.post('/register', (req, res)=> {
         let controller = new user()
         controller.register(req, res)
-    })
-
-    app.get('/logout', (req, res)=> {
-        let controller = new user()
-        controller.logout(req, res)
     })
 
     app.post('/change-password', (req, res)=> {
