@@ -50,4 +50,9 @@ module.exports = function(app, config) {
         let controller = new user()
         controller.changePassword(req, res)
     })
+
+    app.post('/forgot-password', (req, res)=> {
+        let controller = new user()
+        controller.forgot(req, res)
+    })
 }

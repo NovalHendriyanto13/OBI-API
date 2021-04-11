@@ -18,6 +18,12 @@ const config = {
     token_secret: process.env.TOKEN_SECRET,
     exception: {
         token: '1cd855fd3f461fd5f6f15638d02ff689cf86fe7c'
+    },
+    email: {
+        host: process.env.MAIL_HOST,
+        port: process.env.MAIL_PORT,
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD
     }
 }
 module.exports = config

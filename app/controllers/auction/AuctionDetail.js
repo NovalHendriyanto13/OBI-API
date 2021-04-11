@@ -20,7 +20,7 @@ class AuctionDetail extends Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
             let params = req.params
@@ -29,11 +29,11 @@ class AuctionDetail extends Controller {
             const r = new auctionDetailRepo()
             let m = await r.getAuctionDetail(id)
             
-            res.send(this.response(true, m, null))
+            return res.send(this.response(true, m, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))

@@ -13,7 +13,7 @@ class Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
 
             let m
@@ -26,11 +26,11 @@ class Controller {
                 m = await model.getAll()
             }
 
-            res.send(this.response(true, m, null))
+            return res.send(this.response(true, m, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
@@ -43,18 +43,18 @@ class Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.detail')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
             let params = req.params
             let id = params.id
             let m = await model.getId(id)
             
-            res.send(this.response(true, m, null))
+            return res.send(this.response(true, m, null))
         }
         catch (err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
@@ -67,7 +67,7 @@ class Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.update')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
 
             var params = req.body
@@ -77,11 +77,11 @@ class Controller {
                 throw new Error('Parameters is Required')
             }
 
-            res.send(this.response(true, 'Update Module is ready',null))
+            return res.send(this.response(true, 'Update Module is ready',null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))

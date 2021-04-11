@@ -3,6 +3,7 @@ const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const Validation = require(path.resolve('app/library/Validation'))
+const Email = require(path.resolve('app/library/Email'))
 
 const Controller = require(config.controller_path + '/Controller')
 const userModel = require(config.model_path + '/m_user')
@@ -43,11 +44,11 @@ class User extends Controller {
                 token: token,
                 expire_in: expireIn
             }
-            res.send(that.response(true, responseToken, null))
+            return res.send(that.response(true, responseToken, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
@@ -88,6 +89,7 @@ class User extends Controller {
             let token = util.generateToken(dataUser, expireIn);
             let responseToken = {
                 data: {
+                    id: process.insertId,
                     email: data.Email,
                     name: data.Nama,
                     group: 'user'
@@ -95,11 +97,11 @@ class User extends Controller {
                 token: token,
                 expire_in: expireIn
             }
-            res.send(that.response(true, responseToken, null))
+            return res.send(that.response(true, responseToken, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
@@ -112,7 +114,7 @@ class User extends Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.update')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
 
             var params = req.body
@@ -133,14 +135,14 @@ class User extends Controller {
             
             let update = await model.update(data, token.userid)
             if (update)
-                res.send(this.response(true, "Update Profile is Success", null))
+                return res.send(this.response(true, "Update Profile is Success", null))
 
-            res.send(this.response(false, null, "Update Profile is Failed"))
+            return res.send(this.response(false, null, "Update Profile is Failed"))
             
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
@@ -153,7 +155,7 @@ class User extends Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
             var params = req.body
@@ -178,9 +180,43 @@ class User extends Controller {
                 
             let update = await model.update({Password: params.password}, token.userid)
             if (update)
-                res.send(this.response(true, "Change Password is Success", null))
+                return res.send(this.response(true, "Change Password is Success", null))
 
-            res.send(this.response(false, null, "Change Password is Failed"))
+            return res.send(this.response(false, null, "Change Password is Failed"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async forgot(req, res) {
+        try{
+            var params = req.body
+            
+            const rules = {
+                email: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            if (validate.length > 0) {
+                throw new Error(validate.toString())
+            }
+            let m = await model.get({Email:email})
+            
+            if (!m) {
+                return res.send(this.response(false, null, "Data not found"))
+            }
+            const mail = Email()
+            let sendMail = await mail.sendOne(email, "Lupa Kata Sandi", "Kata sandi anda adalah:" + m.Password)
+            if (sendMail) {
+                return res.send(this.response(true,"Your Password has been sent to your email" + email))
+            }
+
+            return res.send(this.response(false, null, "Change Password is Failed"))
         }
         catch(err) {
             console.log(err)

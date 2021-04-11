@@ -14,5 +14,5 @@ app.get('/', (req, res) => {
 require('./config/routes')(app, config)
 
 app.listen(port, () => {
-	  console.log(`Example app listening at http://localhost:${port}`)
+	console.log(`Example app listening at http://localhost:${port}`)
 })

@@ -21,7 +21,7 @@ class Auction extends Controller {
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
-                res.send(this.response(false, null, 'You are not authorized!'))
+                return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
             const date1 = helper.dateNow() + " " + helper.timeNow()
@@ -31,11 +31,11 @@ class Auction extends Controller {
 
             let m = await this.auctionRepo.getAuction(date1, date2)
             
-            res.send(this.response(true, m, null))
+            return res.send(this.response(true, m, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
