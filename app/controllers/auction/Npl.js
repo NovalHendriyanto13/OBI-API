@@ -2,10 +2,10 @@
 const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
-const helper = require(path.resolve('app/utils/helper'))
 
 const Controller = require(config.controller_path + '/Controller')
 const nplModel = require(config.model_path + '/m_npl')
+const nplRepo = require(config.repo_path + '/npl_repo')
 
 class Npl extends Controller {
     constructor() {
@@ -21,8 +21,10 @@ class Npl extends Controller {
             if (access === false) {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
+
+            const n = new nplRepo()
             
-            // let m = await this.auctionRepo.getAuction(date1, date2)
+            let m = await n.getList(token.userid)
             
             return res.send(this.response(true, m, null))
         }

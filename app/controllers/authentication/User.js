@@ -37,6 +37,7 @@ class User extends Controller {
             let token = util.generateToken(dataUser, expireIn);
             let responseToken = {
                 data: {
+                    id: m[0].UserID,
                     email: m[0].Email,
                     name: m[0].Nama,
                     group: m[0].Kategori

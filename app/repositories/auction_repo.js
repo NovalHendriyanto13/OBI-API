@@ -10,7 +10,8 @@ class AuctionRepo {
     }
 
     async getAuction(date1, date2) {
-        const q = "SELECT IdAuctions, IdWilayah, TglAuctions FROM " + table.auction
+        const q = "SELECT a.IdAuctions, a.IdWilayah, a.TglAuctions, b.Kota FROM " + table.auction +" a"
+          + " JOIN ms_wilayah b ON a.IdWilayah = b.IdWilayah"
           + " WHERE StartTime >= '" + date1 + "'"
           + " AND EndTime <= '" + date2 + "'"
           + " ORDER BY TglAuctions ASC"

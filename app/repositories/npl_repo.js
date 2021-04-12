@@ -9,6 +9,12 @@ class NplRepo {
         this.npl = new nplModel()
     }
 
+    async getList(userId) {
+        const m = this.npl.get({
+            UserID: userId
+        })
+        return m
+    }
 }
 
 module.exports = NplRepo
