@@ -14,6 +14,31 @@ class AuctionDetail extends Controller {
         this.setModel(new auctionDetailModel())
     }
 
+    async index(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
+            let paramsBody = req.body
+
+            const r = new auctionDetailRepo()
+            let m = await r.getAuctionUnit(paramsBody)
+            
+            return res.send(this.response(true, m, null))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
     async detail(req, res) {
         try{
             const token = util.authenticate(req, res)

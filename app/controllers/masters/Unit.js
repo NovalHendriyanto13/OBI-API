@@ -12,7 +12,6 @@ class Unit extends Controller {
     constructor() {
         super()
         this.setModel(new unitModel())
-        this.unitRepo = new unitRepo()
     }
 
     async detail(req, res) {
@@ -26,7 +25,8 @@ class Unit extends Controller {
             
             let params = req.params
             let id = params.id
-            let m = await this.unitRepo.getDetail(id)
+            const unitRepo = new unitRepo()
+            let m = await unitRepo.getDetail(id)
             
             return res.send(this.response(true, m, null))
         }
