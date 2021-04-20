@@ -25,9 +25,10 @@ class AuctionDetail extends Controller {
             
             let params = req.params
             let id = params.id
+            let paramsBody = req.body
 
             const r = new auctionDetailRepo()
-            let m = await r.getAuctionDetail(id)
+            let m = await r.getAuctionDetail(id, paramsBody)
             
             return res.send(this.response(true, m, null))
         }

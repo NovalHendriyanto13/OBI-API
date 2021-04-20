@@ -6,11 +6,13 @@ const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
 const unitModel = require(config.model_path + '/m_unit')
+const unitRepo = require(config.repo_path + '/unit_repo')
 
 class Unit extends Controller {
     constructor() {
         super()
         this.setModel(new unitModel())
+        this.unitRepo = new unitRepo()
     }
 
     async detail(req, res) {
@@ -24,7 +26,7 @@ class Unit extends Controller {
             
             let params = req.params
             let id = params.id
-            let m = await model.getId(id)
+            let m = await this.unitRepo.getDetail(id)
             
             return res.send(this.response(true, m, null))
         }

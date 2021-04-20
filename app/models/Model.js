@@ -21,7 +21,7 @@ class Model {
         return rows
     }
 
-    async get(params) {
+    async get(params, order='') {
         let join = ''
         if (typeof(this.joinTable) != 'undefined')
            join = this.joinTable
@@ -33,9 +33,19 @@ class Model {
             condition = condition + key + '=? AND '
             filter.push(params[key])
         }
+        if (typeof(this.whereFilter) != 'undefined') {
+            condition = condition + this.whereFilter
+        }
+
         if (condition !== '') {
             condition = " where " + condition.substr(0, (condition.length - 4))
         }
+        if (order != '') {
+            condition = condition + " order by " + order
+        }
+
+        
+        
         const db = await conn.db()
         let [rows, fields] = await db.execute(q + condition, filter)
         return rows
@@ -124,6 +134,21 @@ class Model {
        this.joinTable = this.joinTable + ' '+ type + " JOIN " + table + ' ON ' + relation
 
        return this
+    }
+
+    where(filter) {
+        if (typeof(this.whereFilter) == 'undefined')
+           this.whereFilter = ''
+
+        let filters = '';
+        for(const i in filter) {
+            filters = filters + i + "'" + filter[i] + "' AND "
+            this.valueFilters
+        }
+
+        this.whereFilter = filters
+
+        return this
     }
 
     defaultFields() {

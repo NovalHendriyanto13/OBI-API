@@ -12,19 +12,37 @@ class AuctionDetailRepo {
         this.auction = new auctionModel()
     }
 
-   async getAuctionDetail(idAuction) {
+   async getAuctionDetail(idAuction, params) {
      let data = await this.auction.getId(idAuction)
     
      let where = []
      where[table.auction + '.IdAuctions'] = idAuction
+     for(const i in params) {
+       where[i] = params[i]
+     }
+
      let detail = await (this.auctionDetail.select(
          table.auction + '.IdAuctions,' +
          table.auction_detail + '.NoLot,' +
-         table.unit + '.NoPolisi' 
+         table.auction_detail + '.HargaLimit,' +
+         table.unit + '.IdUnit, ' +
+         table.unit + '.NoPolisi,' +
+         table.unit + '.Merk, ' +
+         table.unit + '.Tipe, ' + 
+         table.unit + '.Tahun, ' +
+         table.unit + '.Transmisi, ' +
+         table.unit + '.Warna, ' +
+         "IF(" + table.unit + ".GradeMesin = 4, 'A',IF("+ table.unit +".GradeMesin = 3, 'B',IF("+ table.unit +".GradeMesin = 2, 'C',IF("+ table.unit +".GradeMesin = 1, 'D','E')))) as GradeMesin, " +
+         "IF(" + table.unit + ".GradeInterior = 4, 'A',IF("+ table.unit +".GradeInterior = 3, 'B',IF("+ table.unit +".GradeInterior = 2, 'C',IF("+ table.unit +".GradeInterior = 1, 'D','E')))) as GradeInterior, " +
+         "IF(" + table.unit + ".GradeExterior = 4, 'A',IF("+ table.unit +".GradeExterior = 3, 'B',IF("+ table.unit +".GradeExterior = 2, 'C',IF("+ table.unit +".GradeExterior = 1, 'D','E')))) as GradeExterior, " +
+         "DATE_FORMAT(" + table.unit + ".TglBerlakuSTNK, '%e %M %Y') AS TglBerlakuSTNK, " +
+         "DATE_FORMAT(" + table.unit + ".TglBerlakuPajak, '%e %M %Y') AS  TglBerlakuPajak," +
+         "CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) AS image"
        ))
        .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
        .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
-       .get(where)
+       .join(table.unit_image, table.unit + '.IdUnit = ' + table.unit_image + '.IdUnit AND UrutDepan=1', 'left')
+       .get(where, table.auction_detail + '.NoLot ASC')
 
       data[0]['detail'] = detail
 

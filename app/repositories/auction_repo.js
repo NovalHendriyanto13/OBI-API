@@ -9,13 +9,12 @@ class AuctionRepo {
         this.auction = new auctionModel()
     }
 
-    async getAuction(date1, date2) {
-        const q = "SELECT a.IdAuctions, a.IdWilayah, a.TglAuctions, b.Kota FROM " + table.auction +" a"
+    async getAuction(date1) {
+        const q = "SELECT a.IdAuctions, a.IdWilayah, DATE_FORMAT(a.TglAuctions, '%a, %e %M %Y') as TglAuctions, b.Kota FROM " + table.auction +" a"
           + " JOIN ms_wilayah b ON a.IdWilayah = b.IdWilayah"
-          + " WHERE StartTime >= '" + date1 + "'"
-          + " AND EndTime <= '" + date2 + "'"
-          + " ORDER BY TglAuctions ASC"
-
+          + " WHERE a.TglAuctions >= '" + date1 + "'"
+          + " ORDER BY a.TglAuctions ASC"
+          
         let m = await this.auction.raw(q)
 
         return m

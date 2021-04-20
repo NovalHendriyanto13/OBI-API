@@ -24,6 +24,9 @@ const config = {
         port: process.env.MAIL_PORT,
         user: process.env.MAIL_USERNAME,
         pass: process.env.MAIL_PASSWORD
-    }
+    },
+    images: {
+        unit: 'https://otobid.co.id/img/unit/',
+    },
 }
 module.exports = config

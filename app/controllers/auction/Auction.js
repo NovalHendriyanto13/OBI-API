@@ -6,7 +6,7 @@ const helper = require(path.resolve('app/utils/helper'))
 
 const Controller = require(config.controller_path + '/Controller')
 const auctionModel = require(config.model_path + '/m_auction')
-const auctionRepo = require(path.resolve('app/repositories/auction_repo'))
+const auctionRepo = require(config.repo_path + '/auction_repo')
 
 class Auction extends Controller {
     constructor() {
@@ -24,12 +24,8 @@ class Auction extends Controller {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
-            const date1 = helper.dateNow() + " " + helper.timeNow()
-            const cDate1 = new Date(date1)
-            const cDate2 = new Date(cDate1.getTime() + 7 * 24 * 60 * 60 * 1000)
-            const date2 = helper.convertDate(cDate2) + " " + helper.convertTime(cDate2)
-
-            let m = await this.auctionRepo.getAuction(date1, date2)
+            const date1 = helper.dateNow()
+            let m = await this.auctionRepo.getAuction(date1)
             
             return res.send(this.response(true, m, null))
         }
