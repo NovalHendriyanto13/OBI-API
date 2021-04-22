@@ -43,11 +43,37 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-
-        
         
         const db = await conn.db()
         let [rows, fields] = await db.execute(q + condition, filter)
+        return rows
+    }
+
+    async getOne(params, order='') {
+        let join = ''
+        if (typeof(this.joinTable) != 'undefined')
+           join = this.joinTable
+
+        const q = "select "+ this.column +" from "+this.tablename + join
+        let condition = ""
+        let filter = []
+        for (let key in params) {
+            condition = condition + key + '=? AND '
+            filter.push(params[key])
+        }
+        if (typeof(this.whereFilter) != 'undefined') {
+            condition = condition + this.whereFilter
+        }
+
+        if (condition !== '') {
+            condition = " where " + condition.substr(0, (condition.length - 4))
+        }
+        if (order != '') {
+            condition = condition + " order by " + order
+        }
+        
+        const db = await conn.db()
+        let [rows, fields] = await db.execute(q + condition + ' LIMIT 1', filter)
         return rows
     }
 

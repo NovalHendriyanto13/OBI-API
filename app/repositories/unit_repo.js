@@ -18,9 +18,9 @@ class UnitRepo {
         const date = helper.dateNow()
         let where = []
         where[table.unit + '.IdUnit ='] = id
-        where[table.auction + '.TglAuctions >='] = date
+        // where[table.auction + '.TglAuctions >='] = date
 
-        let detail = await (this.auctionDetail.select(
+        let detail = await (this.unit.select(
             table.auction + '.IdAuctions,' +
             table.auction_detail + '.NoLot,' +
             table.auction_detail + '.HargaLimit,' +
@@ -38,11 +38,11 @@ class UnitRepo {
             "DATE_FORMAT(" + table.unit + ".TglBerlakuPajak, '%e %M %Y') AS  TglBerlakuPajak," +
             "CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) AS image"
           ))
+          .join(table.auction_detail, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
           .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
-          .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
           .join(table.unit_image, table.unit + '.IdUnit = ' + table.unit_image + '.IdUnit AND UrutDepan=1', 'left')
           .where(where)
-          .get(null, table.auction_detail + '.NoLot ASC')
+          .getOne(null, table.auction + '.TglAuctions DESC')
 
         data = detail
 

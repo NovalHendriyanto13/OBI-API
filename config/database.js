@@ -22,5 +22,5 @@ module.exports.tables = {
     npl : 'ms_npl',
     brand : 'ms_merk',
     unit_image : 'tr_unit_image',
-    unit_document : 'tr_unit_document',
+    unit_document : 'tr_unit_dokumen',
 }

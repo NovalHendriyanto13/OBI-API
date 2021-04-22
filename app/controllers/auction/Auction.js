@@ -37,6 +37,45 @@ class Auction extends Controller {
             }))
         } 
     }
+
+    async nowNext(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
+            const date = helper.dateNow()
+            let m = await this.auctionRepo.getAuction(date)
+
+            let n = [{
+                'now' : [],
+                'next' : []
+            }]
+
+            console.log(date)
+            
+            for (const i in m) {
+                if ((date) == m[i]['r_TglAuctions']) {
+                    n[0]['now'].push(m[i])
+                }
+                else {
+                    n[0]['next'].push(m[i])
+                }
+            }
+            
+            return res.send(this.response(true, n, null))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
 }
 
 module.exports = Auction

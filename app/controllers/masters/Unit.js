@@ -6,6 +6,8 @@ const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
 const unitModel = require(config.model_path + '/m_unit')
+const documentImageModel = require(config.model_path + '/m_document_image')
+const unitImageModel = require(config.model_path + '/m_unit_image')
 const unitRepo = require(config.repo_path + '/unit_repo')
 
 class Unit extends Controller {
@@ -25,8 +27,16 @@ class Unit extends Controller {
             
             let params = req.params
             let id = params.id
-            const unitRepo = new unitRepo()
-            let m = await unitRepo.getDetail(id)
+            const r = new unitRepo()
+            let m = await r.getDetail(id)
+
+            const dm = new documentImageModel()
+            let documentImages = await dm.get({"IdUnit" : id})
+            m[0]['documents'] = documentImages
+
+            const um = new unitImageModel()
+            let unitImages = await um.select("CONCAT('" + config.images.unit + "', Image) As Image").get({"IdUnit" : id})
+            m[0]['galleries'] = unitImages
             
             return res.send(this.response(true, m, null))
         }

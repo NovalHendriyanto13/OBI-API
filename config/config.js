@@ -27,6 +27,7 @@ const config = {
     },
     images: {
         unit: 'https://otobid.co.id/img/unit/',
+        default_unit: 'https://otobid.co.id/img/not_image.jpg'
     },
 }
 module.exports = config

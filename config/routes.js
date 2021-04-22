@@ -55,4 +55,9 @@ module.exports = function(app, config) {
         let controller = new user()
         controller.forgot(req, res)
     })
+
+    app.post('/now-next', (req, res)=> {
+        let controller = new auction()
+        controller.nowNext(req, res)
+    })
 }

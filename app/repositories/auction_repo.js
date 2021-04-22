@@ -10,7 +10,7 @@ class AuctionRepo {
     }
 
     async getAuction(date1) {
-        const q = "SELECT a.IdAuctions, a.IdWilayah, DATE_FORMAT(a.TglAuctions, '%a, %e %M %Y') as TglAuctions, b.Kota FROM " + table.auction +" a"
+        const q = "SELECT a.IdAuctions, a.IdWilayah, DATE_FORMAT(a.TglAuctions, '%a, %e %M %Y') as TglAuctions, DATE_FORMAT(a.TglAuctions, '%Y-%m-%e') as r_TglAuctions, b.Kota FROM " + table.auction +" a"
           + " JOIN ms_wilayah b ON a.IdWilayah = b.IdWilayah"
           + " WHERE a.TglAuctions >= '" + date1 + "'"
           + " ORDER BY a.TglAuctions ASC"

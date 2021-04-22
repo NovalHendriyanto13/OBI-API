@@ -39,7 +39,7 @@ class AuctionDetailRepo {
           "IF(" + table.unit + ".GradeExterior = 4, 'A',IF("+ table.unit +".GradeExterior = 3, 'B',IF("+ table.unit +".GradeExterior = 2, 'C',IF("+ table.unit +".GradeExterior = 1, 'D','E')))) as GradeExterior, " +
           "DATE_FORMAT(" + table.unit + ".TglBerlakuSTNK, '%e %M %Y') AS TglBerlakuSTNK, " +
           "DATE_FORMAT(" + table.unit + ".TglBerlakuPajak, '%e %M %Y') AS  TglBerlakuPajak," +
-          "CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) AS image"
+          "IF(" + table.unit_image + ".image IS NOT NULL, CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) , '" + config.images.default_unit + "') AS image"
         ))
         .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
         .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
@@ -78,7 +78,7 @@ class AuctionDetailRepo {
          "IF(" + table.unit + ".GradeExterior = 4, 'A',IF("+ table.unit +".GradeExterior = 3, 'B',IF("+ table.unit +".GradeExterior = 2, 'C',IF("+ table.unit +".GradeExterior = 1, 'D','E')))) as GradeExterior, " +
          "DATE_FORMAT(" + table.unit + ".TglBerlakuSTNK, '%e %M %Y') AS TglBerlakuSTNK, " +
          "DATE_FORMAT(" + table.unit + ".TglBerlakuPajak, '%e %M %Y') AS  TglBerlakuPajak," +
-         "CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) AS image"
+         "IF(" + table.unit_image + ".image IS NOT NULL, CONCAT('" + config.images.unit + "', " + table.unit_image + ".image) , '" + config.images.default_unit + "') AS image"
        ))
        .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
        .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
