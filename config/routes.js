@@ -7,6 +7,7 @@ module.exports = function(app, config) {
     const article = require(config.controller_path + '/article/Article')
     const npl = require(config.controller_path + '/auction/Npl')
     const brand = require(config.controller_path + '/masters/Brand')
+    const bid = require(config.controller_path + '/auction/Bid')
 
     const routes = {
         user : new user(),
@@ -16,7 +17,8 @@ module.exports = function(app, config) {
         auction_detail : new auctionDetail(),
         article : new article(),
         npl : new npl(),
-        brand : new brand()
+        brand : new brand(),
+        bid : new bid(),
     }
 
     for (x in routes) {

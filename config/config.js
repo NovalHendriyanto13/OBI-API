@@ -33,5 +33,10 @@ const config = {
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT || 6379,
     },
+    limit_bid: {
+        car: 500000,
+        vehicle: 500000,
+        bike: 100000
+    },
 }
 module.exports = config

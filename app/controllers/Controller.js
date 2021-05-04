@@ -72,9 +72,28 @@ class Controller {
             
             let params = req.params
             let id = params.id
-            let m = await model.getId(id)
+            let m 
             
-            return res.send(this.response(true, m, null))
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                client.get(this.redisKey.detail + id, async (err, cache) => {
+                    if (err) throw err
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await model.getId(id)
+                        await util.redisSet(this.redisKey.detail + id, m)
+                        return res.send(this.response(true, m, null))
+                    }
+                })
+            }
+            else {
+                m = await model.getId(id)
+            
+                return res.send(this.response(true, m, null))
+            }
         }
         catch (err) {
             console.log(err)

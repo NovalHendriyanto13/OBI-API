@@ -2,6 +2,7 @@
 const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
 const Validation = require(path.resolve('app/library/Validation'))
 const Email = require(path.resolve('app/library/Email'))
 
@@ -12,6 +13,10 @@ class User extends Controller {
     constructor() {
         super()
         this.setModel(new userModel())
+        this.redis = true
+        this.redisKey= {
+            detail: variable.redisKey.USER,
+        }
     }
 
     async login(req, res) {

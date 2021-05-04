@@ -15,6 +15,30 @@ class NplRepo {
         })
         return m
     }
+
+    async getActive(userId) {
+        const m = this.npl.get({
+            UserID: userId,
+            Online: 1,
+            Verifikasi: 1,
+            Closed: 0,
+            NoLot: '',
+        })
+        return m
+    }
+
+    async getActiveByAuction(userId, auctionId, type) {
+        const m = this.npl.get({
+            UserID: userId,
+            IdAuctions: auctionId,
+            Online: 1,
+            Verifikasi: 1,
+            Closed: 0,
+            NoLot: '',
+            Jenis: type
+        })
+        return m
+    }
 }
 
 module.exports = NplRepo

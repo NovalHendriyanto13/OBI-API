@@ -23,4 +23,5 @@ module.exports.tables = {
     brand : 'ms_merk',
     unit_image : 'tr_unit_image',
     unit_document : 'tr_unit_dokumen',
+    bid: 'ms_bid'
 }
