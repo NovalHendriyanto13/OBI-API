@@ -6,18 +6,21 @@ const readdirp = promisify(fs.readdir)
 const statp = promisify(fs.stat)
 const config = require(path.resolve('config/config'))
 const userModel = require(config.model_path + '/m_user')
+const redis = require(path.resolve('config/redis'))
 
-let generateToken = function(params, expiresIn) {
+const generateToken = function(params, expiresIn) {
     return jwt.sign(params, config.token_secret, { expiresIn: expiresIn})
 }
-let authenticate = function (req, res, next) {
+
+const authenticate = function (req, res, next) {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
     
     return jwt.verify(token, config.token_secret)
 }
-let permission = async function (token, page) {
+
+const permission = async function (token, page) {
     const users = new userModel()
 
     let user = await users.get({username : token.username, email: token.email})
@@ -27,7 +30,8 @@ let permission = async function (token, page) {
 
     return false
 }
-let staticToken = function (req, res, next) {
+
+const staticToken = function (req, res, next) {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
 
@@ -38,7 +42,7 @@ let staticToken = function (req, res, next) {
     return false
 }
 
-let scanDir = async function (dir, results = []) {
+const scanDir = async function (dir, results = []) {
   let files = await readdirp(directoryName);
     for (let f of files) {
         let fullPath = path.join(directoryName, f);
@@ -52,10 +56,16 @@ let scanDir = async function (dir, results = []) {
     return results;
 }
 
+const redisSet = async function (key, value, exp=86400) {
+    const client = redis.redisClient()
+    client.setex(key, exp, JSON.stringify(value))
+}
+
 module.exports = {
   generateToken, 
   authenticate, 
   permission, 
   scanDir, 
-  staticToken
+  staticToken,
+  redisSet
 }

@@ -2,6 +2,8 @@
 const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
+const redis = require(path.resolve('config/redis'))
 
 const Controller = require(config.controller_path + '/Controller')
 const brandModel = require(config.model_path + '/m_brand')
@@ -11,6 +13,10 @@ class Brand extends Controller {
     constructor() {
         super()
         this.setModel(new brandModel())
+        this.redis= true
+        this.redisKey= {
+            index: variable.redisKey.BRAND
+        }
     }
 
     async index(req, res) {
@@ -23,9 +29,30 @@ class Brand extends Controller {
             }
             
             const r = new brandRepo()
-            let m = await r.getAllBrand()
-            
-            return res.send(this.response(true, m, null))
+            let m
+
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                
+                client.get(this.redisKey.index, async (err, cache) => {
+                    if (err) throw err
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await r.getAllBrand()
+
+                        await util.redisSet(this.redisKey.index, m)
+
+                        return res.send(this.response(true, m, null))
+                    }
+                })
+            }
+            else {
+                m = await r.getAllBrand()
+                return res.send(this.response(true, m, null))
+            }
         }
         catch (err) {
             console.log(err)

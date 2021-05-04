@@ -1,11 +1,18 @@
 'use strict'
 const { resolve } = require('path')
 const path = require('path')
-const { model_path } = require('../../config/config')
-const connectDB = require(path.resolve('config/database'))
 const util = require(path.resolve('app/utils/util'))
+const redis = require(path.resolve('config/redis'))
 
 class Controller {
+
+    constructor() {
+        this.redis = false
+        this.redisKey= {
+            index: '',
+            detail: ''
+        }
+    }
 
     async index(req, res) {
         try{
@@ -17,16 +24,33 @@ class Controller {
             }
 
             let m
-            let params = req.body
-            
-            if (params !== null) {
-                m = await model.get(params)
+            if (this.redis !== false) {
+                let params = req.body
+                const client = redis.redisClient()
+
+                client.get(this.redisKey.index, async (err, cache) => {
+                    if (err) throw err
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache);
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        if (params !== null) {
+                            m = await model.get(params)
+                        }
+                        else {
+                            m = await model.getAll()
+                        }
+                        await util.redisSet(this.redisKey.index, m)
+
+                        return res.send(this.response(true, m, null))
+                    }
+                })
             }
             else {
                 m = await model.getAll()
+                return res.send(this.response(true, m, null))
             }
-
-            return res.send(this.response(true, m, null))
         }
         catch(err) {
             console.log(err)

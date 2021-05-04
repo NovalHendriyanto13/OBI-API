@@ -29,5 +29,9 @@ const config = {
         unit: 'https://otobid.co.id/img/unit/',
         default_unit: 'https://otobid.co.id/img/not_image.jpg'
     },
+    redis: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT || 6379,
+    },
 }
 module.exports = config

@@ -1,8 +1,26 @@
 version: '3.4'
 
 services:
+  redis:
+    image: redis:6.2.2
+    restart: always
+    command: redis-server
+    ports: 
+      - '6379:6379'
+    environment: 
+      - REDIS_REPLICATION_MODE=master
+    expose: 
+      - '6379'
+    networks: 
+      - backend
+    volumes: 
+      - ./redis-data:/var/lib/redis
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+      
   api:
     image: obid-api
+    links: 
+      - redis
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -18,25 +36,25 @@ services:
       - 3000:3000
     command: npm run dev
 
-  db:
-    image: mysql:5.7.26
-    restart: always
-    command: --default-authentication-plugin=mysql_native_password
-    container_name: db
-    ports: 
-        - '3306:3306'
-    environment: 
-        MYSQL_DATABASE: 'obid'
-        MYSQL_USER: 'root'
-        MYSQL_PASSWORD: 'password'
-        MYSQL_ROOT_PASSWORD: 'password'
-    expose: 
-        - '3306'
-    networks: 
-        - frontend
-    volumes: 
-        - dbdata:/var/lib/mysql
-        - ./settings/mysql/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
+  # db:
+  #   image: mysql:5.7.26
+  #   restart: always
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   container_name: db
+  #   ports: 
+  #       - '3306:3306'
+  #   environment: 
+  #       MYSQL_DATABASE: 'obid'
+  #       MYSQL_USER: 'root'
+  #       MYSQL_PASSWORD: 'password'
+  #       MYSQL_ROOT_PASSWORD: 'password'
+  #   expose: 
+  #       - '3306'
+  #   networks: 
+  #       - frontend
+  #   volumes: 
+  #       - dbdata:/var/lib/mysql
+  #       - ./settings/mysql/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
     # command: ["./wait-for-it.sh","mysql:3306"]
 
 volumes: 
