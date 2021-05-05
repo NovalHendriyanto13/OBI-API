@@ -27,7 +27,11 @@ const config = {
     },
     images: {
         unit: 'https://otobid.co.id/img/unit/',
-        default_unit: 'https://otobid.co.id/img/not_image.jpg'
+        default_unit: 'https://otobid.co.id/img/not_image.jpg',
+        user: 'https://otobid.co.id/upload/document/user', 
+    },
+    path: {
+        user: '/usr/src/upload/document/user'
     },
     redis: {
         host: process.env.REDIS_HOST,

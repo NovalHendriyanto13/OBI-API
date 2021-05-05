@@ -1,10 +1,12 @@
 'use strict'
 const path = require('path')
+const fs = require('fs')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const variable = require(path.resolve('app/utils/variable'))
 const Validation = require(path.resolve('app/library/Validation'))
 const Email = require(path.resolve('app/library/Email'))
+const formidable = require('formidable')
 
 const Controller = require(config.controller_path + '/Controller')
 const userModel = require(config.model_path + '/m_user')
@@ -62,48 +64,82 @@ class User extends Controller {
     }
 
     async register(req, res) {
-        var params = req.body
         var that = this
         try{
-            const model = this.getModel()
-            let check = await model.get({Email : params.email})
-            if (check.length > 0)
-                throw new Error('Email is already exists!')
+            const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
+            form.parse(req, async (err, fields, files) => {
+                if (err) {
+                    throw new Error(err)
+                }
 
-            let data = {
-                Nama: params.name,
-                Email: params.email,
-                NoTelp: params.phone_no,
-                NoKTP: params.identity_no,
-                NoNPWP: params.npwp_no,
-                Alamat: params.address,
-                Bank: params.bank,
-                Cabang: params.branch_bank,
-                NoRek: params.account_no,
-                AtasNama : params.account_name,
-            }
+                const model = that.getModel()
+                var params = fields
+                let check = await model.getOne({Email : params.email})
+                if (check.length > 0)
+                    throw new Error('Email is already exists!')
+                
+                let data = {
+                    Nama: params.name,
+                    Email: params.email,
+                    NoTelp: params.phone_no,
+                    NoKTP: params.identity_no,
+                    NoNPWP: params.npwp_no,
+                    Alamat: params.address,
+                    Bank: params.bank,
+                    Cabang: params.branch_bank,
+                    NoRek: params.account_no,
+                    AtasNama : params.account_name,
+                }
 
-            let process = await model.insert(data)
-            let dataUser = {
-                userid: process.insertId,
-                username: '',
-                email: data.Email,
-                group: 'user'
-            }
-            
-            const expireIn = 1*60*60
-            let token = util.generateToken(dataUser, expireIn);
-            let responseToken = {
-                data: {
-                    id: process.insertId,
+                let process = await model.insert(data)
+                let dataUser = {
+                    userid: process.insertId,
+                    username: '',
                     email: data.Email,
-                    name: data.Nama,
                     group: 'user'
-                }, 
-                token: token,
-                expire_in: expireIn
-            }
-            return res.send(that.response(true, responseToken, null))
+                }
+                let ktpName = ''
+                let npwpName = ''
+                if (files.ktp_file.size <= 0) {
+                    fs.unlinkSync(files.ktp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.ktp_file.path)
+                    ktpName = `KTP_${process.insertId}${ext}`
+                    const ktpNamePath = `${config.path.user}/${ktpName}`
+                    fs.writeFile(ktpNamePath, files.ktp_file.path, function (err) { 
+                        console.log(err)
+                    })
+                }
+
+                if (files.npwp_file.size <= 0) {
+                    fs.unlinkSync(files.npwp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.npwp_file.path)
+                    npwpName = `NPWP_${process.insertId}${ext}`
+                    const npwpNamePath = `${config.path.user}/${npwpName}`
+                    fs.writeFile(npwpNamePath, files.npwp_file.path, function (err) { 
+                        console.log(err)
+                    })
+                }
+
+                await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
+
+                const expireIn = 1*60*60
+                let token = util.generateToken(dataUser, expireIn);
+                let responseToken = {
+                    data: {
+                        id: process.insertId,
+                        email: data.Email,
+                        name: data.Nama,
+                        group: 'user'
+                    }, 
+                    token: token,
+                    expire_in: expireIn
+                }
+                return res.send(that.response(true, responseToken, null))
+            })
         }
         catch(err) {
             console.log(err)
@@ -167,14 +203,15 @@ class User extends Controller {
             var params = req.body
             
             const rules = {
-                old_password: 'required|numeric',
+                old_password: 'required',
                 password: 'required',
                 re_password: 'required'
             }
             const validation = new Validation();
             let validate = validation.check(params, rules)
+            
             if (validate.length > 0) {
-                throw new Error(validate.toString())
+                throw new Error(validate)
             }
             let m = await model.getId(token.userid)
             
@@ -208,18 +245,24 @@ class User extends Controller {
             }
             const validation = new Validation();
             let validate = validation.check(params, rules)
+
             if (validate.length > 0) {
                 throw new Error(validate.toString())
             }
-            let m = await model.get({Email:email})
             
-            if (!m) {
+            const model = this.getModel()
+            let m = await model.getOne({Email: params.email})
+            
+            if (m.length <= 0) {
                 return res.send(this.response(false, null, "Data not found"))
             }
-            const mail = Email()
-            let sendMail = await mail.sendOne(email, "Lupa Kata Sandi", "Kata sandi anda adalah:" + m.Password)
+            const mail = new Email()
+            const subject = 'Lupa Kata Sandi (Otobid Indonesia)'
+            const emailMsg = `<p>Hi, ${m[0].Nama}</p><p>Kata Sandi Anda adalah :<b>${m[0].Password}</b></p>`
+
+            let sendMail = await mail.sendOne(params.email, subject, emailMsg)
             if (sendMail) {
-                return res.send(this.response(true,"Your Password has been sent to your email" + email))
+                return res.send(this.response(true,"Your Password has been sent to your email" + params.email, null))
             }
 
             return res.send(this.response(false, null, "Change Password is Failed"))

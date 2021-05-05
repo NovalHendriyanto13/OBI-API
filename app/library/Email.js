@@ -8,10 +8,13 @@ class Email {
         this.transporter = mailer.createTransport({
             host: config.email.host,
             port: config.email.port,
-            secure: false,
+            secure: true,
             auth: {
                 user: config.email.user,
                 pass: config.email.pass
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         })
     }
@@ -28,5 +31,6 @@ class Email {
         }
         return false
     }
-
 }
+
+module.exports = Email
