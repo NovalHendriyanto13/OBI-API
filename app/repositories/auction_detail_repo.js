@@ -88,8 +88,32 @@ class AuctionDetailRepo {
       data[0]['detail'] = detail
 
       return data
-
    }
+
+   async auctionInfo(idAuction, idUnit, noLot) {
+     let where = []
+     where[table.auction + '.IdAuctions'] = idAuction
+     where[table.unit + '.IdUnit'] = idUnit
+     where[table.auction_detail + '.NoLot'] = noLot
+
+    let data = await (this.auctionDetail.select(
+      table.auction + '.IdAuctions,' +
+      table.auction + '.StartTime,' +
+      table.auction + '.EndTime,' +
+      table.auction + '.Online,' +
+      table.auction_detail + '.NoLot,' +
+      table.auction_detail + '.Open,' +
+      table.unit + '.HargaLimit,' +
+      table.unit + '.IdUnit, ' +
+      table.unit + '.Jenis,' +
+      table.unit + '.StatusUnit '
+    ))
+    .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
+    .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
+    .getOne(where, table.auction_detail + '.NoLot ASC')
+
+    return data
+  }
 }
 
 module.exports = AuctionDetailRepo

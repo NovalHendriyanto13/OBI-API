@@ -5,8 +5,8 @@ const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
 const bidModel = require(config.model_path + '/m_bid')
-const nplModel = require(config.model_path + '/m_npl')
-// const bidRepo = require(config.repo_path + '/bid_repo')
+const nplRepo = require(config.repo_path + '/npl_repo')
+const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
 
 class Bid extends Controller {
     constructor() {
@@ -24,19 +24,18 @@ class Bid extends Controller {
             }
 
             var params = req.body
-            const mNpl = new nplModel()
+            const type = params.type
+            const rNpl = new nplRepo()
+            const rAuctionDetail = new auctionDetailRepo()
             
-            const validNPL = await mNpl.getOne({
-                NPL: params.npl,
-                IdAuctions: params.auction_id,
-                Online: 1,
-                Verifikasi: 1,
-                Closed: 0,
-                UserID: token.userid
-            })
-
+            const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
             if (validNPL === null) {
                 throw new Error('Invalid NPL Number')
+            }
+
+            const auctionUnitInfo = await rAuctionDetail.auctionInfo(params.auction_id, params.unit_id)
+            if (auctionUnitInfo === null) {
+                throw new Error('Invalid Unit ID')
             }
 
             

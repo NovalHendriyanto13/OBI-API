@@ -10,14 +10,14 @@ class NplRepo {
     }
 
     async getList(userId) {
-        const m = this.npl.get({
+        const m = await this.npl.get({
             UserID: userId
         })
         return m
     }
 
     async getActive(userId) {
-        const m = this.npl.get({
+        const m = await this.npl.get({
             UserID: userId,
             Online: 1,
             Verifikasi: 1,
@@ -28,7 +28,7 @@ class NplRepo {
     }
 
     async getActiveByAuction(userId, auctionId, type) {
-        const m = this.npl.get({
+        const m = await this.npl.get({
             UserID: userId,
             IdAuctions: auctionId,
             Online: 1,
@@ -37,6 +37,20 @@ class NplRepo {
             NoLot: '',
             Jenis: type
         })
+        return m
+    }
+
+    async getValidNpl(userId, nplNo, auctionId, type) {
+        const m = await this.npl.getOne({
+            UserID: userId,
+            IdAuctions: auctionId,
+            Online: 1,
+            Verifikasi: 1,
+            Closed: 0,
+            NoLot: '',
+            Jenis: type,
+            NPL: nplNo,
+        });
         return m
     }
 }
