@@ -262,7 +262,7 @@ class User extends Controller {
 
             let sendMail = await mail.sendOne(params.email, subject, emailMsg)
             if (sendMail) {
-                return res.send(this.response(true,"Your Password has been sent to your email" + params.email, null))
+                return res.send(this.response(true,"Your Password has been sent to your email :" + params.email, null))
             }
 
             return res.send(this.response(false, null, "Change Password is Failed"))
