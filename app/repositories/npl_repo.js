@@ -10,9 +10,23 @@ class NplRepo {
     }
 
     async getList(userId) {
-        const m = await this.npl.get({
+        const m = await (this.npl.select(
+            table.npl + '.TransID,' +
+            table.npl + '.Jenis,' +
+            table.npl + '.IdAuctions,' +
+            table.npl + '.NPL,' +
+            table.npl + '.Deposit,' +
+            table.npl + '.Nominal,' +
+            "IF(" + table.npl + ".Closed = 0, 'ACTIVE', IF(" + table.npl + ".Closed = 1, 'MENANG', 'NOT ACTIVE')) AS Status," +
+            "IF(" + table.npl + ".Verifikasi = 0, 'BELOM TERVERIFIKASI', 'TERVERIFIKASI') AS Verifikasi," +
+            table.npl + ".NoLot," +
+            "DATE_FORMAT(" + table.auction + ".TglAuctions, '%e %M %Y') AS TglAuctions"
+        ))
+        .join(table.auction, table.npl + '.IdAuctions = ' + table.auction + '.IdAuctions')
+        .get({
             UserID: userId
-        })
+        }, table.auction + '.TglAuctions DESC')
+
         return m
     }
 

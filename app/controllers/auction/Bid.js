@@ -5,13 +5,37 @@ const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
 const bidModel = require(config.model_path + '/m_bid')
-const nplRepo = require(config.repo_path + '/npl_repo')
+const bidRepo = require(config.repo_path + '/bid_repo')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
 
 class Bid extends Controller {
     constructor() {
         super()
         this.setModel(new bidModel())
+    }
+
+    async index(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            const n = new bidRepo()
+            
+            let m = await n.getList(token.userid)
+            
+            return res.send(this.response(true, m, null))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
     }
 
     async submitBid(req, res) {

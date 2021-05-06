@@ -8,6 +8,7 @@ class Model {
         this.tablename
         this.primaryKey = 'id'
         this.column = '*'
+        this.debugSql = false
     }
     async getAll() {
         const db = await conn.db()
@@ -43,7 +44,7 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-        
+
         const db = await conn.db()
         let [rows, fields] = await db.execute(q + condition, filter)
         return rows
@@ -174,6 +175,11 @@ class Model {
 
         this.whereFilter = filters
 
+        return this
+    }
+
+    debug() {
+        this.debugSql = true
         return this
     }
 
