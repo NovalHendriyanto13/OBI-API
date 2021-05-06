@@ -28,11 +28,15 @@ module.exports = function(app, config) {
             c.index(req, res)
         })
         
+        app.post('/' + route + '/create', (req, res)=> {
+            c.create(req, res)
+        })
+
         app.post('/' + route + '/update' + '/:id' , (req, res)=> {
             c.update(req, res)
         })
 
-        app.post('/' + route + '/:id', (req, res)=>{
+        app.post('/' + route + '/:id', (req, res)=> {
             c.detail(req, res)
         })
     }

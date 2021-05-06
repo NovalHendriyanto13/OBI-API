@@ -131,6 +131,10 @@ class Controller {
         } 
     }
 
+    async create(req, res) {
+        return res.send(this.response(false, null, 'Create Module'))
+    }
+
     response(status, data, message) {
         return {
             status: status,

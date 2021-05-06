@@ -1,12 +1,12 @@
 'use strict'
 const path = require('path')
 const fs = require('fs')
+const formidable = require('formidable')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const variable = require(path.resolve('app/utils/variable'))
 const Validation = require(path.resolve('app/library/Validation'))
 const Email = require(path.resolve('app/library/Email'))
-const formidable = require('formidable')
 
 const Controller = require(config.controller_path + '/Controller')
 const userModel = require(config.model_path + '/m_user')
@@ -108,7 +108,7 @@ class User extends Controller {
                     ktpName = `KTP_${process.insertId}${ext}`
                     const ktpNamePath = `${config.path.user}/${ktpName}`
                     fs.writeFile(ktpNamePath, files.ktp_file.path, function (err) { 
-                        console.log(err)
+                        return res.send(that.response(false, err, null))
                     })
                 }
 
@@ -120,7 +120,7 @@ class User extends Controller {
                     npwpName = `NPWP_${process.insertId}${ext}`
                     const npwpNamePath = `${config.path.user}/${npwpName}`
                     fs.writeFile(npwpNamePath, files.npwp_file.path, function (err) { 
-                        console.log(err)
+                        return res.send(that.response(false, err, null))
                     })
                 }
 

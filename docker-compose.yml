@@ -30,7 +30,8 @@ services:
       - ./app.js:/usr/src/app/app.js
       - ./config:/usr/src/app/config
       - ./app:/usr/src/app/app
-      - ../upload/document/user:/usr/src/upload/document/user
+      - ./upload/document/user:/usr/src/upload/document/user
+      - ./upload/struck:/usr/src/upload/struck
     networks: 
       - backend
     ports:

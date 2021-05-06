@@ -13,7 +13,6 @@ class Validation {
                 }
 
                 if (v.trim() == 'numeric') {
-                    console.log('mas')
                     this.numeric(key, params[key])
                 }
                 i++

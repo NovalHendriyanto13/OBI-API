@@ -117,7 +117,7 @@ class Model {
 
     async update(params, id) {
         let data = []
-        let q = "update " + this.tablename + " set "
+        let q = `update ${this.tablename} set `
         let values = ""
 
         for (let key in params) {
@@ -127,8 +127,8 @@ class Model {
 
         let valueSubstr = (values.length) - 2
         q = q +  values.substring(0, valueSubstr)
-        q = q + " WHERE " + this.primaryKey + " = " + id
-
+        q = q + ` WHERE ${this.primaryKey} = '${id}'`
+        
         const db = await conn.db()
         let [rows, fields] = await db.execute(q, data)
         return rows

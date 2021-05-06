@@ -31,7 +31,8 @@ const config = {
         user: 'https://otobid.co.id/upload/document/user', 
     },
     path: {
-        user: '/usr/src/upload/document/user'
+        user: '/usr/src/upload/document/user',
+        npl: '/usr/src/upload/struck'
     },
     redis: {
         host: process.env.REDIS_HOST,
