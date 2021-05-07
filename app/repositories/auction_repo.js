@@ -9,13 +9,21 @@ class AuctionRepo {
         this.auction = new auctionModel()
     }
 
-    async getAuction(date1) {
-        const q = "SELECT a.IdAuctions, a.IdWilayah, DATE_FORMAT(a.TglAuctions, '%a, %e %M %Y') as TglAuctions, DATE_FORMAT(a.TglAuctions, '%Y-%m-%e') as r_TglAuctions, b.Kota FROM " + table.auction +" a"
-          + " JOIN ms_wilayah b ON a.IdWilayah = b.IdWilayah"
-          + " WHERE a.TglAuctions >= '" + date1 + "'"
-          + " ORDER BY a.TglAuctions ASC"
-          
-        let m = await this.auction.raw(q)
+    async getAuction(date) {
+        let where = []
+        where[table.auction + '.TglAuctions >= '] = date
+  
+        const m = await (this.auction.select(
+          table.auction + '.IdAuctions,' +
+          table.auction + '.IdWilayah,' +
+          table.auction + '.Online,' +
+          "DATE_FORMAT(" + table.auction + ".TglAuctions, '%a, %e %M %Y') as TglAuctions," +
+          "DATE_FORMAT(" + table.auction + ".TglAuctions, '%Y-%m-%e') as r_TglAuctions," +
+          table.area + '.Kota'
+        ))
+        .join(table.area, table.area + '.IdWilayah = ' + table.auction +'.IdWilayah')
+        .where(where)
+        .get(null, table.auction + '.TglAuctions ASC')
 
         return m
    }
