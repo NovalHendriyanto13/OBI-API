@@ -126,7 +126,7 @@ class User extends Controller {
 
                 await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
 
-                const expireIn = 1*60*60
+                const expireIn = 365*60*60
                 let token = util.generateToken(dataUser, expireIn);
                 let responseToken = {
                     data: {

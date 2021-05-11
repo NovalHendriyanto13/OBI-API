@@ -72,6 +72,41 @@ class Bid extends Controller {
             }))
         } 
     }
+
+    async liveBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const type = params.type
+            const rNpl = new nplRepo()
+            const rAuctionDetail = new auctionDetailRepo()
+            
+            const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
+            if (validNPL === null) {
+                throw new Error('Invalid NPL Number')
+            }
+
+            const auctionUnitInfo = await rAuctionDetail.auctionInfo(params.auction_id, params.unit_id)
+            if (auctionUnitInfo === null) {
+                throw new Error('Invalid Unit ID')
+            }
+
+            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
 }
 
 module.exports = Bid

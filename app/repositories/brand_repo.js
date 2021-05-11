@@ -17,10 +17,16 @@ class BrandRepo {
         return m
     }
 
-    async getTipeByMerk(merk) {
+    async getTypeByMerk(merk) {
         const m = await this.brand.get({
             Merk : merk
         })
+
+        return m
+    }
+
+    async getType() {
+        const m = await this.brand.select("DISTINCT(Tipe) as Tipe").get()
 
         return m
     }

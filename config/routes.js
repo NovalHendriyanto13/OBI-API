@@ -66,4 +66,19 @@ module.exports = function(app, config) {
         let controller = new auction()
         controller.nowNext(req, res)
     })
+
+    app.post('/brand-type', (req, res)=> {
+        let controller = new brand()
+        controller.type(req, res)
+    })
+
+    app.post('/submit-bid', (req, res)=> {
+        let controller = new bid()
+        controller.submitBid(req, res)
+    })
+
+    app.post('/live-bid', (req, res)=> {
+        let controller = new bid()
+        controller.LiveBid(req, res)
+    })
 }

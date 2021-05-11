@@ -14,6 +14,10 @@ class Unit extends Controller {
     constructor() {
         super()
         this.setModel(new unitModel())
+        this.redis= true
+        this.redisKey= {
+            detail: variable.redisKey.UNIT_DETAIL,
+        }
     }
 
     async detail(req, res) {
@@ -28,17 +32,46 @@ class Unit extends Controller {
             let params = req.params
             let id = params.id
             const r = new unitRepo()
-            let m = await r.getDetail(id)
+            let m
 
-            const dm = new documentImageModel()
-            let documentImages = await dm.get({"IdUnit" : id})
-            m[0]['documents'] = documentImages
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                client.get(this.redisKey.detail + id, async (err, cache) => {
+                    if (err) throw err
 
-            const um = new unitImageModel()
-            let unitImages = await um.select("CONCAT('" + config.images.unit + "', Image) As Image").get({"IdUnit" : id})
-            m[0]['galleries'] = unitImages
-            
-            return res.send(this.response(true, m, null))
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await r.getDetail(id)
+
+                        const dm = new documentImageModel()
+                        let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Image) AS Image").get({"IdUnit" : id})
+                        m[0]['documents'] = documentImages
+
+                        const um = new unitImageModel()
+                        let unitImages = await um.select("CONCAT('" + config.images.unit + "', Image) As Image").get({"IdUnit" : id})
+                        m[0]['galleries'] = unitImages
+                        
+                        await util.redisSet(this.redisKey.detail + id, m)
+                        return res.send(this.response(true, m, null))
+                    }                    
+                })
+            }
+            else {
+                m = await r.getDetail(id)
+
+                const dm = new documentImageModel()
+                let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Image) AS Image").get({"IdUnit" : id})
+                m[0]['documents'] = documentImages
+
+                const um = new unitImageModel()
+                let unitImages = await um.select("CONCAT('" + config.images.unit + "', Image) As Image").get({"IdUnit" : id})
+                m[0]['galleries'] = unitImages
+                
+                return res.send(this.response(true, m, null))
+            }
         }
         catch (err) {
             console.log(err)

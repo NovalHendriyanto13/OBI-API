@@ -1,8 +1,9 @@
 'use strict'
 const path = require('path')
-const bcrypt = require('bcrypt')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
+const redis = require(path.resolve('config/redis'))
 
 const Controller = require(config.controller_path + '/Controller')
 const auctionDetailModel = require(config.model_path + '/m_auction_detail')
@@ -12,6 +13,12 @@ class AuctionDetail extends Controller {
     constructor() {
         super()
         this.setModel(new auctionDetailModel())
+        this.auctionDetailRepo = new auctionDetailRepo()
+        this.redis= true
+        this.redisKey= {
+            index: variable.redisKey.AUCTION_DETAIL_UNIT,
+            detail: variable.redisKey.AUCTION_DETAIL,
+        }
     }
 
     async index(req, res) {
@@ -23,12 +30,29 @@ class AuctionDetail extends Controller {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
-            let paramsBody = req.body
+            let m;
+            let params = req.body
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                client.get(this.redisKey.index, async (err, cache) => {
+                    if (err) throw err
 
-            const r = new auctionDetailRepo()
-            let m = await r.getAuctionUnit(paramsBody)
-            
-            return res.send(this.response(true, m, null))
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await this.auctionDetailRepo.getAuctionUnit(params)
+                        
+                        await util.redisSet(this.redisKey.index, m)
+                        return res.send(this.response(true, m, null))
+                    }                    
+                })
+            }
+            else {
+                await util.redisSet(this.redisKey.index, m, (4*60*60))
+                return res.send(this.response(true, m, null))
+            }
         }
         catch(err) {
             console.log(err)
@@ -52,10 +76,27 @@ class AuctionDetail extends Controller {
             let id = params.id
             let paramsBody = req.body
 
-            const r = new auctionDetailRepo()
-            let m = await r.getAuctionDetail(id, paramsBody)
-            
-            return res.send(this.response(true, m, null))
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                client.get(this.redisKey.detail + id, async (err, cache) => {
+                    if (err) throw err
+
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await this.auctionDetailRepo.getAuctionDetail(id, paramsBody)
+                        
+                        await util.redisSet(this.redisKey.detail + id, m, (6*60*60))
+                        return res.send(this.response(true, m, null))
+                    }                    
+                })
+            }
+            else {
+                await util.redisSet(this.redisKey.index, m)
+                return res.send(this.response(true, m, null))
+            }
         }
         catch(err) {
             console.log(err)

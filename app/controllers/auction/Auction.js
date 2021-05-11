@@ -51,6 +51,7 @@ class Auction extends Controller {
                 })
             }
             else {
+                m = await this.auctionRepo.getAuction(date)
                 return res.send(this.response(true, m, null))
             }
         }
