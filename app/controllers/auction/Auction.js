@@ -44,8 +44,10 @@ class Auction extends Controller {
                     }
                     else {
                         m = await this.auctionRepo.getAuction(date)
-                        await util.redisSet(this.redisKey.index + date, m)
-
+                        if (m.length > 0) {
+                            await util.redisSet(this.redisKey.index + date, m)
+                        }
+                        
                         return res.send(this.response(true, m, null))
                     }
                 })

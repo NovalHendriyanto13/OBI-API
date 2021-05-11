@@ -1,8 +1,9 @@
 'use strict'
 const path = require('path')
-const bcrypt = require('bcrypt')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
+const redis = require(path.resolve('config/redis'))
 
 const Controller = require(config.controller_path + '/Controller')
 const unitModel = require(config.model_path + '/m_unit')
@@ -47,7 +48,7 @@ class Unit extends Controller {
                         m = await r.getDetail(id)
 
                         const dm = new documentImageModel()
-                        let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Image) AS Image").get({"IdUnit" : id})
+                        let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Dokumen) AS Image").get({"IdUnit" : id})
                         m[0]['documents'] = documentImages
 
                         const um = new unitImageModel()

@@ -54,7 +54,16 @@ class AuctionDetailRepo {
     }
 
    async getAuctionDetail(idAuction, params) {
-     let data = await this.auction.getId(idAuction)
+     let data = await this.auction.select(
+        "IdAuctions," + 
+        "DATE_FORMAT(TglAuctions, '%e %M %Y') AS TglAuctions," +
+        "DATE_FORMAT(StartTime, '%T') AS StartTime," +
+        "DATE_FORMAT(EndTime, '%T') AS EndTime," +
+        "IdWilayah," +
+        "Closed," +
+        "Online"
+      )
+      .getId(idAuction)
     
      let where = []
      where[table.auction + '.IdAuctions'] = idAuction

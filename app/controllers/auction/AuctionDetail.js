@@ -30,7 +30,7 @@ class AuctionDetail extends Controller {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
             
-            let m;
+            let m
             let params = req.body
             if (this.redis !== false) {
                 const client = redis.redisClient()
@@ -44,13 +44,13 @@ class AuctionDetail extends Controller {
                     else {
                         m = await this.auctionDetailRepo.getAuctionUnit(params)
                         
-                        await util.redisSet(this.redisKey.index, m)
+                        await util.redisSet(this.redisKey.index, m, (4*60*60))
                         return res.send(this.response(true, m, null))
                     }                    
                 })
             }
             else {
-                await util.redisSet(this.redisKey.index, m, (4*60*60))
+                m = await this.auctionDetailRepo.getAuctionUnit(params)
                 return res.send(this.response(true, m, null))
             }
         }
@@ -75,6 +75,7 @@ class AuctionDetail extends Controller {
             let params = req.params
             let id = params.id
             let paramsBody = req.body
+            let m
 
             if (this.redis !== false) {
                 const client = redis.redisClient()
@@ -87,14 +88,13 @@ class AuctionDetail extends Controller {
                     }
                     else {
                         m = await this.auctionDetailRepo.getAuctionDetail(id, paramsBody)
-                        
                         await util.redisSet(this.redisKey.detail + id, m, (6*60*60))
                         return res.send(this.response(true, m, null))
                     }                    
                 })
             }
             else {
-                await util.redisSet(this.redisKey.index, m)
+                m = await this.auctionDetailRepo.getAuctionDetail(id, paramsBody)
                 return res.send(this.response(true, m, null))
             }
         }
