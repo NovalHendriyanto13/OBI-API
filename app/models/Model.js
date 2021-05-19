@@ -72,7 +72,7 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-        
+        console.log(q + condition)
         const db = await conn.db()
         let [rows, fields] = await db.execute(q + condition + ' LIMIT 1', filter)
         return rows

@@ -73,6 +73,7 @@ class AuctionDetailRepo {
 
      let detail = await (this.auctionDetail.select(
          table.auction + '.IdAuctions,' +
+         table.auction + '.Online, ' +
          table.auction_detail + '.NoLot,' +
          table.auction_detail + '.HargaLimit,' +
          table.unit + '.IdUnit, ' +

@@ -29,7 +29,7 @@ const config = {
         unit: 'https://otobid.co.id/img/unit/',
         default_unit: 'https://otobid.co.id/img/not_image.jpg',
         user: 'https://otobid.co.id/upload/document/user',
-        document_unit: 'https://otobid.co.id/upload/dokumeninternal'
+        document_unit: 'https://otobid.co.id/upload/dokumeninternal/'
     },
     path: {
         user: '/usr/src/upload/document/user',
