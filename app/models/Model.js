@@ -24,8 +24,10 @@ class Model {
 
     async get(params, order='') {
         let join = ''
-        if (typeof(this.joinTable) != 'undefined')
+        if (typeof(this.joinTable) != 'undefined') {
            join = this.joinTable
+           this.joinTable = '' 
+        }
 
         const q = "select "+ this.column +" from "+this.tablename + join
         let condition = ""
@@ -52,8 +54,10 @@ class Model {
 
     async getOne(params, order='') {
         let join = ''
-        if (typeof(this.joinTable) != 'undefined')
+        if (typeof(this.joinTable) != 'undefined') {
            join = this.joinTable
+           this.joinTable = ''
+        }
 
         const q = "select "+ this.column +" from "+this.tablename + join
         let condition = ""
