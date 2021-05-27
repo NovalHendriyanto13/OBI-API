@@ -209,7 +209,7 @@ class Bid extends Controller {
                 throw new Error('Invalid Unit ID or No Lot')
             }
 
-            if (auctionUnitInfo[0].Online != 'tender') {
+            if (auctionUnitInfo[0].Online == 'tender') {
                 throw new Error('Invalid Auction Type')
             }
 
