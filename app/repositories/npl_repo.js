@@ -67,6 +67,18 @@ class NplRepo {
         });
         return m
     }
+
+    async getRemaining(userId, auctionId) {
+        const m = await (this.npl.select('NPL')).get({
+            'UserID': userId,
+            'IdAuctions': auctionId, 
+            'Online': '1',
+            'Verifikasi': '1',
+            'Closed': '0'
+        })
+
+        return m
+    }
 }
 
 module.exports = NplRepo

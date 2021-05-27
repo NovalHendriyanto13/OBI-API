@@ -79,6 +79,6 @@ module.exports = function(app, config) {
 
     app.post('/live-bid', (req, res)=> {
         let controller = new bid()
-        controller.LiveBid(req, res)
+        controller.liveBid(req, res)
     })
 }

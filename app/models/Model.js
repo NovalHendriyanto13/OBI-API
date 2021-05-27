@@ -76,7 +76,7 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-        console.log(q + condition)
+
         const db = await conn.db()
         let [rows, fields] = await db.execute(q + condition + ' LIMIT 1', filter)
         return rows
@@ -136,6 +136,32 @@ class Model {
         
         const db = await conn.db()
         let [rows, fields] = await db.execute(q, data)
+        return rows
+    }
+
+    async updateWhere(params) {
+        let data = []
+        let q = `update ${this.tablename} set `
+        let values = ""
+
+        for (let key in params) {
+            values = values + key + ' = ?, '
+            data.push(params[key])
+        }
+
+        let valueSubstr = (values.length) - 2
+        q = q +  values.substring(0, valueSubstr)
+
+        let condition = ""
+        if (typeof(this.whereFilter) != 'undefined') {
+            condition = condition + this.whereFilter
+        }
+
+        if (condition !== '') {
+            condition = " where " + condition.substr(0, (condition.length - 4))
+        }
+        const db = await conn.db()
+        let [rows, fields] = await db.execute(q + condition, data)
         return rows
     }
 

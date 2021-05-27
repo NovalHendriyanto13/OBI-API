@@ -2,6 +2,7 @@
 const path = require('path')
 const fs = require('fs')
 const formidable = require('formidable')
+const dateformat = require('dateformat')
 const { randomInt } = require('../../utils/helper')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
@@ -73,8 +74,7 @@ class Npl extends Controller {
                     resMsg = this.response(false, null, validate.toString())
                 }
                 
-                let dateNow = (helper.dateNow() + helper.timeNow()).split('-').join('').toString()
-                dateNow = dateNow.split(':').join('')
+                let dateNow = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
 
                 const randomNpl = helper.randomInt(899, 100)
                 const transId = `${dateNow}_${randomInt(99, 1)}` 

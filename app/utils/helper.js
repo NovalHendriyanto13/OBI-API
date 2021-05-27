@@ -1,26 +1,25 @@
 let dateNow = function() {
-  var currentdate = new Date(); 
-  let month = (currentdate.getMonth()+1)
-  let dt = currentdate.getDate()
-
+  var [month, date, year] = new Date().toLocaleDateString("en-US", { timeZone:  "Asia/Jakarta"}).split('/'); 
+  
   if (month < 10) {
     month = '0' + month
   }
 
-  if (dt < 10) {
-    dt = '0' + dt
+  if (date < 10) {
+    date = '0' + date
   }
 
-  return currentdate.getFullYear() + "-"
+  return year + "-"
     + month  + "-" 
-    + dt
+    + date
 }
 
 let timeNow = function() {
-  var currentdate = new Date(); 
-  return currentdate.getHours() + ":"  
-    + currentdate.getMinutes() + ":" 
-    + currentdate.getSeconds();
+  var currentdate = new Date().toLocaleTimeString("en-US", { timeZone:  "Asia/Jakarta"}); 
+  return currentdate
+  // return currentdate.getHours() + ":"  
+  //   + currentdate.getMinutes() + ":" 
+  //   + currentdate.getSeconds();
 }
 
 let convertDate = function(date) {

@@ -30,6 +30,27 @@ class BidRepo {
 
         return m
     }
+
+    async maxBid(idAuction, idUnit, noLot) {
+        let where = []
+        where['IdAuctions'] = idAuction
+        where['IdUnit'] = idUnit
+        where['NoLot'] = noLot
+
+        const m = await this.bid.select('Nominal').getOne(where, 'Nominal DESC')
+
+        return m
+    }
+
+    async getRemaining(userId, auctionId) {
+        const m = await (this.bid.select('UserID')).get({
+            'UserID': userId,
+            'IdAuctions': auctionId, 
+            'statusbidx': 'berjalan',
+        })
+
+        return m
+    }
 }
 
 module.exports = BidRepo

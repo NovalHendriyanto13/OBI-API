@@ -108,8 +108,9 @@ class AuctionDetailRepo {
 
     let data = await (this.auctionDetail.select(
       table.auction + '.IdAuctions,' +
-      table.auction + '.StartTime,' +
-      table.auction + '.EndTime,' +
+      "DATE_FORMAT(" + table.auction + ".TglAuctions, '%e %M %Y') AS TglAuctions," +
+      "DATE_FORMAT(" + table.auction + ".StartTime, '%T') AS StartTime," +
+      "DATE_FORMAT(" + table.auction + ".EndTime, '%T') AS EndTime," +
       table.auction + '.Online,' +
       table.auction_detail + '.NoLot,' +
       table.auction_detail + '.Open,' +
