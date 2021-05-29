@@ -40,7 +40,7 @@ class Npl extends Controller {
                 code: err.code,
                 message: err.message
             }))
-        } 
+        }
     }
 
     async create(req, res) {
@@ -120,12 +120,38 @@ class Npl extends Controller {
         }
         catch(err) {
             console.log(err)
-            console.log('masi')
             return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
         } 
+    }
+
+    async getActiveByAuction(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            let params = req.body
+            const auctionId = params.auction_id
+            const type = params.type
+            const n = new nplRepo()
+            
+            let m = await n.getActiveByAuction(token.userid, auctionId, type)
+            
+            return res.send(this.response(true, m, null))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
     }
 }
 

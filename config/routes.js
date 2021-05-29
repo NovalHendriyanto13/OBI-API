@@ -81,4 +81,9 @@ module.exports = function(app, config) {
         let controller = new bid()
         controller.liveBid(req, res)
     })
+
+    app.post('/active-npl', (req, res)=> {
+        let controller = new npl()
+        controller.getActiveByAuction(req, res)
+    })
 }
