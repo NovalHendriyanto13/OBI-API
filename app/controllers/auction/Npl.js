@@ -137,6 +137,17 @@ class Npl extends Controller {
             }
 
             let params = req.body
+            const rules = {
+                auction_id: 'required',
+                type: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
             const auctionId = params.auction_id
             const type = params.type
             const n = new nplRepo()
