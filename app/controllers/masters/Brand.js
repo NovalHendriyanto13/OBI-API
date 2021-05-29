@@ -78,6 +78,7 @@ class Brand extends Controller {
             const id = params.id
 
             const r = new brandRepo()
+            let m
 
             if (this.redis !== false) {
                 const client = redis.redisClient()
@@ -121,7 +122,7 @@ class Brand extends Controller {
             }
             
             const params = req.params
-            const id = params.id
+            let m
 
             const r = new brandRepo()
 
