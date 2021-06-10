@@ -86,4 +86,9 @@ module.exports = function(app, config) {
         let controller = new npl()
         controller.getActiveByAuction(req, res)
     })
+
+    app.get('/term-condition', (req, res)=> {
+        let controller = new article()
+        controller.termCondition(req, res)
+    })
 }

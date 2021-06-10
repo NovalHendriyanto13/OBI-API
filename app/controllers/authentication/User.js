@@ -26,7 +26,8 @@ class User extends Controller {
         var that = this
         try{
             const model = this.getModel()
-            let m = await model.get({Email : params.username})
+            const m = await model.raw(`SELECT * FROM ${model.tablename} WHERE Email= '${params.username}' OR Username= '${params.username}'`)
+             
             if (m.length <= 0)
                 throw new Error('Username not found!')
 
