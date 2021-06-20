@@ -66,6 +66,7 @@ class User extends Controller {
 
     async register(req, res) {
         var that = this
+        const defaultPassword = 'Otobid123'
         try{
             const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
             form.parse(req, async (err, fields, files) => {
@@ -89,7 +90,10 @@ class User extends Controller {
                     Bank: params.bank,
                     Cabang: params.branch_bank,
                     NoRek: params.account_no,
-                    AtasNama : params.account_name,
+                    AtasNama: params.account_name,
+                    TempatLahir: params.birth_place,
+                    TglLahir: params.birth_date,
+                    Password: defaultPassword
                 }
 
                 let process = await model.insert(data)
@@ -275,6 +279,38 @@ class User extends Controller {
                 message: err.message
             }))
         } 
+    }
+
+    async requestChange(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
+            var params = req.body
+
+            const mail = new Email()
+            const subject = 'Permintaan Ubah Data'
+            const emailMsg = `<p>Saya yang bernama, ${params.Nama}</p><p>Mohon untuk ubah profil data saya dengan data-data sebagai berikut</p>${params.toString()}`
+
+            let sendMail = await mail.sendOne(params.email, subject, emailMsg)
+            if (sendMail) {
+                return res.send(this.response(true,"Permintaan ubah data sedang di proses ", null))
+            }
+            
+
+            return res.send(this.response(false, null, "Permintaan ubah data gagal"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
     }
 }
 

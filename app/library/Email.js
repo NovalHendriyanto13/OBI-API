@@ -31,6 +31,19 @@ class Email {
         }
         return false
     }
+
+    async receiveOne(from, subject, message) {
+        let send = await this.transporter.sendMail({
+            to: config.email.user,
+            from: from,
+            subject: subject,
+            html: message
+        })
+        if (send.messageId !== null) {
+            return true
+        }
+        return false
+    }
 }
 
 module.exports = Email
