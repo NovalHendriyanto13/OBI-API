@@ -79,8 +79,12 @@ class User extends Controller {
                 let check = await model.getOne({Email : params.email})
                 if (check.length > 0)
                     throw new Error('Email is already exists!')
+
+                const getLastId = await model.getOne({}, 'UserID desc')
+                const lastId = getLastId[0].UserID
                 
                 let data = {
+                    UserID: lastId,
                     Nama: params.name,
                     Email: params.email,
                     NoTelp: params.phone_no,
