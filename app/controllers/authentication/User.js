@@ -67,6 +67,7 @@ class User extends Controller {
     async register(req, res) {
         var that = this
         const defaultPassword = 'Otobid123'
+
         try{
             const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
             form.parse(req, async (err, fields, files) => {
@@ -76,15 +77,25 @@ class User extends Controller {
 
                 const model = that.getModel()
                 var params = fields
-                let check = await model.getOne({Email : params.email})
-                if (check.length > 0)
-                    throw new Error('Email is already exists!')
+                
+                const rules = {
+                    email: 'required|email',
+                }
+                const validation = new Validation();
+                let validate = validation.check(params, rules)
+                
+                if (validate.length > 0) {
+                    return res.send(this.response(false, null, {
+                        code: 500,
+                        message: validate
+                    }))
+                }
 
                 const getLastId = await model.getOne({}, 'UserID desc')
                 const lastId = getLastId[0].UserID
                 
                 let data = {
-                    UserID: lastId,
+                    UserID: lastId + 1,
                     Nama: params.name,
                     Email: params.email,
                     NoTelp: params.phone_no,
@@ -109,6 +120,7 @@ class User extends Controller {
                 }
                 let ktpName = ''
                 let npwpName = ''
+                let errUpload = []
                 if (files.ktp_file.size <= 0) {
                     fs.unlinkSync(files.ktp_file.path)
                 }
@@ -117,7 +129,7 @@ class User extends Controller {
                     ktpName = `KTP_${process.insertId}${ext}`
                     const ktpNamePath = `${config.path.user}/${ktpName}`
                     fs.writeFile(ktpNamePath, files.ktp_file.path, function (err) { 
-                        return res.send(that.response(false, err, null))
+                        errUpload.push('Upload KTP file is failed')
                     })
                 }
 
@@ -129,11 +141,24 @@ class User extends Controller {
                     npwpName = `NPWP_${process.insertId}${ext}`
                     const npwpNamePath = `${config.path.user}/${npwpName}`
                     fs.writeFile(npwpNamePath, files.npwp_file.path, function (err) { 
-                        return res.send(that.response(false, err, null))
+                        errUpload.push('Upload NPWP File is failed')
                     })
                 }
+                if (errUpload.length <= 0) {
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
+                }
+                else {
+                    return res.send(this.response(false, null, {
+                        code: 501,
+                        message: errUpload
+                    }))
+                }
 
-                await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
+                const mail = new Email()
+                const subject = 'Registrasi User Baru (Otobid Indonesia)'
+                const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
+                Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
+                await mail.sendOne(params.email, subject, emailMsg)
 
                 const expireIn = 365*60*60
                 let token = util.generateToken(dataUser, expireIn);

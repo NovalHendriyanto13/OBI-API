@@ -53,7 +53,10 @@ class AuctionDetailRepo {
  
     }
 
-   async getAuctionDetail(idAuction, params) {
+   async getAuctionDetail(idAuction, params, order='') {
+     if (order == '') {
+      order = table.auction_detail + '.NoLot ASC'
+     }
      let data = await this.auction.select(
         "IdAuctions," + 
         "DATE_FORMAT(TglAuctions, '%e %M %Y') AS TglAuctions," +
@@ -66,11 +69,10 @@ class AuctionDetailRepo {
       .getId(idAuction)
     
      let where = []
-     where[table.auction + '.IdAuctions'] = idAuction
+     where[table.auction + '.IdAuctions ='] = idAuction
      for(const i in params) {
        where[i] = params[i]
      }
-
      let detail = await (this.auctionDetail.select(
          table.auction + '.IdAuctions,' +
          table.auction + '.Online, ' +
@@ -93,7 +95,8 @@ class AuctionDetailRepo {
        .join(table.auction, table.auction +'.IdAuctions = ' + table.auction_detail + '.IdAuctions', 'left')
        .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
        .join(table.unit_image, table.unit + '.IdUnit = ' + table.unit_image + '.IdUnit AND UrutDepan=1', 'left')
-       .get(where, table.auction_detail + '.NoLot ASC')
+       .where(where)
+       .get(null, order)
 
       data[0]['detail'] = detail
 

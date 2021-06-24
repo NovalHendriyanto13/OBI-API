@@ -91,4 +91,9 @@ module.exports = function(app, config) {
         let controller = new article()
         controller.termCondition(req, res)
     })
+
+    app.post('/auction-detail-search/:id', (req, res)=> {
+        let controller = new auctionDetail()
+        controller.search(req, res)
+    })
 }

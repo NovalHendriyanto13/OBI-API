@@ -15,6 +15,10 @@ class Validation {
                 if (v.trim() == 'numeric') {
                     this.numeric(key, params[key])
                 }
+
+                if (v.trim() == 'email') {
+                    this.email(key, params[key])
+                }
                 i++
             }
         }
@@ -43,6 +47,17 @@ class Validation {
     numeric(key, param) {
         const errStr = " is Numeric"
         if (typeof(param) === 'undefined' || isNaN(param)) {
+            if (typeof(this.res[key]) === 'undefined') {
+                this.res[key] = []
+            }
+            this.res[key].push(key.toUpperCase() + errStr) 
+        }
+    }
+
+    email(key, param) {
+        const errStr = " is not valid email"
+        const emailRegexp = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+        if (typeof(param) === 'undefined' || param == '' || emailRegexp.test(param) == false) {
             if (typeof(this.res[key]) === 'undefined') {
                 this.res[key] = []
             }
