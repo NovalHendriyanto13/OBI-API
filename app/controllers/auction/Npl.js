@@ -98,7 +98,7 @@ class Npl extends Controller {
                     Closed: 0,
                     Bank: '',
                     Cabang: '',
-                    NoRek: '',
+                    NoRek: params.norek,
                     Nominal: params.nominal,
                     NoLot: ''
                 }
