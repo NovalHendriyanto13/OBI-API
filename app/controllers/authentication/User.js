@@ -99,12 +99,7 @@ class User extends Controller {
                     return res.send(this.response(false, null, 'File NPWP harus di upload'))
                 }
 
-                const getLastId = await model.getOne({}, 'UserID desc')
-                const lastId = getLastId[0].UserID
-                const newId = lastId + 1
-                
                 let data = {
-                    UserID: newId,
                     Nama: params.name,
                     Email: params.email,
                     NoTelp: params.phone_no,
@@ -122,7 +117,7 @@ class User extends Controller {
 
                 let process = await model.insert(data)
                 let dataUser = {
-                    userid: newId,
+                    userid: process.insertId,
                     username: '',
                     email: data.Email,
                     group: 'user'
@@ -135,7 +130,7 @@ class User extends Controller {
                 }
                 else {
                     const ext = path.extname(files.ktp_file.name)
-                    ktpName = `KTP_${newId}${ext}`
+                    ktpName = `KTP_${process.insertId}${ext}`
                     const ktpNamePath = `${config.path.user}/${ktpName}`
                     fs.rename(files.ktp_file.path, ktpNamePath, function (err) { 
                         
@@ -147,14 +142,14 @@ class User extends Controller {
                 }
                 else {
                     const ext = path.extname(files.npwp_file.name)
-                    npwpName = `NPWP_${newId}${ext}`
+                    npwpName = `NPWP_${process.insertId}${ext}`
                     const npwpNamePath = `${config.path.user}/${npwpName}`
                     fs.rename(files.npwp_file.path, npwpNamePath, function (err) { 
                         
                     })
                 }
                 if (errUpload.length <= 0) {
-                    await model.update({FKTP: ktpName, FNPWP: npwpName}, newId)
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
                 }
                 else {
                     return res.send(this.response(false, null, {
@@ -173,7 +168,7 @@ class User extends Controller {
                 let token = util.generateToken(dataUser, expireIn);
                 let responseToken = {
                     data: {
-                        id: newId,
+                        id: process.insertId,
                         email: data.Email,
                         name: data.Nama,
                         group: 'user'
