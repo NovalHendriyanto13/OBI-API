@@ -99,6 +99,11 @@ class User extends Controller {
                     return res.send(this.response(false, null, 'File NPWP harus di upload'))
                 }
 
+                const check = await model.get({'Email': params.email})
+                if (check.length > 0) {
+                    return res.send(this.response(false, null, 'Email sudah teregistrasi'))
+                }
+
                 let data = {
                     Nama: params.name,
                     Email: params.email,
@@ -197,27 +202,90 @@ class User extends Controller {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
 
-            var params = req.body
-            var id = req.params.id
+            const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
+            form.parse(req, async (err, fields, files) => {
+                if (err) {
+                    throw new Error(err)
+                }
 
-            let data = {
-                Nama: params.name,
-                Email: params.email,
-                NoTelp: params.phone_no,
-                NoKTP: params.identity_no,
-                NoNPWP: params.npwp_no,
-                Alamat: params.address,
-                Bank: params.bank,
-                Cabang: params.branch_bank,
-                NoRek: params.account_no,
-                AtasNama : params.account_name,
-            }
-            
-            let update = await model.update(data, token.userid)
-            if (update)
+                var params = fields
+                
+                const rules = {
+                    birth_date: 'required',
+                    birth_place: 'required'
+                }
+                const validation = new Validation();
+                let validate = validation.check(params, rules)
+                
+                if (validate.length > 0) {
+                    return res.send(this.response(false, null, {
+                        code: 500,
+                        message: validate
+                    }))
+                }
+
+                if (typeof(files.ktp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File KTP harus di upload'))
+                }
+
+                if (typeof(files.npwp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File NPWP harus di upload'))
+                }
+
+                let data = {
+                    Nama: params.name,
+                    NoTelp: params.phone_no,
+                    NoKTP: params.identity_no,
+                    NoNPWP: params.npwp_no,
+                    Alamat: params.address,
+                    Bank: params.bank,
+                    Cabang: params.branch_bank,
+                    NoRek: params.account_no,
+                    AtasNama : params.account_name,
+                    TempatLahir: params.birth_place,
+                    TglLahir: params.birth_date,
+                }
+                
+                let update = await model.update(data, token.userid)
+
+                let ktpName = ''
+                let npwpName = ''
+                let errUpload = []
+                if (files.ktp_file.size <= 0) {
+                    fs.unlinkSync(files.ktp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.ktp_file.name)
+                    ktpName = `KTP_${token.userid}${ext}`
+                    const ktpNamePath = `${config.path.user}/${ktpName}`
+                    fs.rename(files.ktp_file.path, ktpNamePath, function (err) { 
+                        
+                    })
+                }
+
+                if (files.npwp_file.size <= 0) {
+                    fs.unlinkSync(files.npwp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.npwp_file.name)
+                    npwpName = `NPWP_${token.userid}${ext}`
+                    const npwpNamePath = `${config.path.user}/${npwpName}`
+                    fs.rename(files.npwp_file.path, npwpNamePath, function (err) { 
+                        
+                    })
+                }
+                if (errUpload.length <= 0) {
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, token.userid)
+                }
+                else {
+                    return res.send(this.response(false, null, {
+                        code: 501,
+                        message: errUpload
+                    }))
+                }
+
                 return res.send(this.response(true, "Update Profile is Success", null))
-
-            return res.send(this.response(false, null, "Update Profile is Failed"))
+            })
             
         }
         catch(err) {
@@ -312,38 +380,6 @@ class User extends Controller {
                 message: err.message
             }))
         } 
-    }
-
-    async requestChange(req, res) {
-        try{
-            const token = util.authenticate(req, res)
-            const model = this.getModel()
-            const access = await util.permission(token, model.tablename + '.index')
-            if (access === false) {
-                return res.send(this.response(false, null, 'You are not authorized!'))
-            }
-            
-            var params = req.body
-
-            const mail = new Email()
-            const subject = 'Permintaan Ubah Data'
-            const emailMsg = `<p>Saya yang bernama, ${params.Nama}</p><p>Mohon untuk ubah profil data saya dengan data-data sebagai berikut</p>${params.toString()}`
-
-            let sendMail = await mail.sendOne(params.email, subject, emailMsg)
-            if (sendMail) {
-                return res.send(this.response(true,"Permintaan ubah data sedang di proses ", null))
-            }
-            
-
-            return res.send(this.response(false, null, "Permintaan ubah data gagal"))
-        }
-        catch(err) {
-            console.log(err)
-            return res.send(this.response(false, null, {
-                code: err.code,
-                message: err.message
-            }))
-        }
     }
 }
 
