@@ -91,11 +91,20 @@ class User extends Controller {
                     }))
                 }
 
+                if (typeof(files.ktp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File KTP harus di upload'))
+                }
+
+                if (typeof(files.npwp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File NPWP harus di upload'))
+                }
+
                 const getLastId = await model.getOne({}, 'UserID desc')
                 const lastId = getLastId[0].UserID
+                const newId = lastId + 1
                 
                 let data = {
-                    UserID: lastId + 1,
+                    UserID: newId,
                     Nama: params.name,
                     Email: params.email,
                     NoTelp: params.phone_no,
@@ -113,7 +122,7 @@ class User extends Controller {
 
                 let process = await model.insert(data)
                 let dataUser = {
-                    userid: process.insertId,
+                    userid: newId,
                     username: '',
                     email: data.Email,
                     group: 'user'
@@ -125,11 +134,11 @@ class User extends Controller {
                     fs.unlinkSync(files.ktp_file.path)
                 }
                 else {
-                    const ext = path.extname(files.ktp_file.path)
-                    ktpName = `KTP_${process.insertId}${ext}`
+                    const ext = path.extname(files.ktp_file.name)
+                    ktpName = `KTP_${newId}${ext}`
                     const ktpNamePath = `${config.path.user}/${ktpName}`
-                    fs.writeFile(ktpNamePath, files.ktp_file.path, function (err) { 
-                        errUpload.push('Upload KTP file is failed')
+                    fs.rename(files.ktp_file.path, ktpNamePath, function (err) { 
+                        
                     })
                 }
 
@@ -137,15 +146,15 @@ class User extends Controller {
                     fs.unlinkSync(files.npwp_file.path)
                 }
                 else {
-                    const ext = path.extname(files.npwp_file.path)
-                    npwpName = `NPWP_${process.insertId}${ext}`
+                    const ext = path.extname(files.npwp_file.name)
+                    npwpName = `NPWP_${newId}${ext}`
                     const npwpNamePath = `${config.path.user}/${npwpName}`
-                    fs.writeFile(npwpNamePath, files.npwp_file.path, function (err) { 
-                        errUpload.push('Upload NPWP File is failed')
+                    fs.rename(files.npwp_file.path, npwpNamePath, function (err) { 
+                        
                     })
                 }
                 if (errUpload.length <= 0) {
-                    await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, newId)
                 }
                 else {
                     return res.send(this.response(false, null, {
@@ -154,17 +163,17 @@ class User extends Controller {
                     }))
                 }
 
-                const mail = new Email()
-                const subject = 'Registrasi User Baru (Otobid Indonesia)'
-                const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
-                Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
-                await mail.sendOne(params.email, subject, emailMsg)
+                // const mail = new Email()
+                // const subject = 'Registrasi User Baru (Otobid Indonesia)'
+                // const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
+                // Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
+                // await mail.sendOne(params.email, subject, emailMsg)
 
                 const expireIn = 365*60*60
                 let token = util.generateToken(dataUser, expireIn);
                 let responseToken = {
                     data: {
-                        id: process.insertId,
+                        id: newId,
                         email: data.Email,
                         name: data.Nama,
                         group: 'user'

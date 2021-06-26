@@ -47,7 +47,7 @@ class Npl extends Controller {
         var that = this
         try{
             const token = util.authenticate(req, res)
-            const model = that.getModel()
+            const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.create')
             if (access === false) {
                 return res.send(this.response(false, null, 'You are not authorized!'))
@@ -76,11 +76,12 @@ class Npl extends Controller {
                     return res.send(this.response(false, null, 'File Attachment harus di upload'))
                 }
                 
-                let dateNow = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
+                let dateNow = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss')
+                let dateNowFormat = dateformat(helper.dateNow()+ ' ' + helper.timeNow(), 'yyyymmddHHMMss') 
 
                 const randomNpl = helper.randomInt(899, 100)
-                const transId = `${dateNow}_${randomInt(99, 1)}` 
-                const code = token.userid + '-' + dateformat(helper.dateNow()+ ' ' + helper.timeNow(), 'yyyymmddHHMMss') 
+                const transId = `${dateNowFormat}_${randomInt(99, 1)}` 
+                const code = token.userid + '-' + dateNowFormat
                 
                 let data = {
                     TransID: transId,
@@ -109,11 +110,10 @@ class Npl extends Controller {
                     fs.unlinkSync(files.attach.path)
                 }
                 else {
-                    const ext = path.extname(files.attach.path)
+                    const ext = path.extname(files.attach.name)
                     attachmentName = `${token.userid}-${transId}${ext}`
                     const attachmentPath = `${config.path.npl}/${attachmentName}`
-                    fs.writeFile(attachmentPath, files.attach.path, function (err) { 
-
+                    fs.rename(files.attach.path, attachmentPath, function (err) { 
                     })
                     await model.update({Attach: attachmentName}, transId)
                 }
