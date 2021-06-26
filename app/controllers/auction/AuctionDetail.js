@@ -132,7 +132,13 @@ class AuctionDetail extends Controller {
             let id = params.id
             let paramsBody = req.body
             let where = []
-            if (paramsBody.merk != '') {
+            let sort = ''
+            const sorts = {
+                'nolot': table.auction_detail + '.NoLot ASC',
+                'minprice': table.auction_detail + '.HargaLimit ASC',
+                'maxprice': table.auction_detail + '.HargaLimit DESC',
+            }
+            if (paramsBody.brand != '') {
               where[table.unit + '.Merk = '] = paramsBody.brand
             }
             if (paramsBody.type != '') {
@@ -144,15 +150,17 @@ class AuctionDetail extends Controller {
             if (paramsBody.transmission != '') {
                 where[table.unit + '.Transmisi = '] = paramsBody.transmission
             }
-            if (paramsBody.start_year != '' && paramsBody.end_year) {
+            if (paramsBody.start_year != '' && paramsBody.end_year != '') {
                 where[table.unit + '.Tahun >= '] = paramsBody.start_year
                 where[table.unit + '.Tahun <= '] = paramsBody.end_year
             }
-            if (paramsBody.start_price != '' && paramsBody.end_price) {
+            if (paramsBody.start_price != '' && paramsBody.end_price != '') {
                 where[table.auction_detail + '.HargaLimit >= '] = paramsBody.start_price
                 where[table.auction_detail + '.HargaLimit <= '] = paramsBody.end_price
             }
-            let m = await this.auctionDetailRepo.getAuctionDetail(id, where, paramsBody.sort)
+            sort = sorts[paramsBody.sort]
+
+            let m = await this.auctionDetailRepo.getAuctionDetail(id, where, sort)
             return res.send(this.response(true, m, null))            
         }
         catch(err) {
