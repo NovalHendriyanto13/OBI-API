@@ -102,7 +102,9 @@ class Auction extends Controller {
                             }
                         }
                         
-                        await util.redisSet(this.redisKey.nowNext + date, n)
+                        if (m.length > 0) {
+                            await util.redisSet(this.redisKey.nowNext + date, n)
+                        }
                         return res.send(this.response(true, n, null))
                     }
                 })

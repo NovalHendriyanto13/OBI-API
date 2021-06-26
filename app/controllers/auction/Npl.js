@@ -46,21 +46,19 @@ class Npl extends Controller {
     async create(req, res) {
         var that = this
         try{
+            const token = util.authenticate(req, res)
+            const model = that.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
             const form = formidable({ multiples: true, uploadDir: config.path.npl, keepExtensions: true })
             form.parse(req, async (err, fields, files) => {
-                let resMsg
                 if (err) {
-                    resMsg = this.response(false, null, err)
+                    return res.send(this.response(false, null, err))
                 }
 
                 var params = fields                
-                const token = util.authenticate(req, res)
-                const model = that.getModel()
-                const access = await util.permission(token, model.tablename + '.create')
-                if (access === false) {
-                    resMsg = this.response(false, null, 'You are not authorized!')
-                }
-
                 const rules = {
                     an: 'required',
                     auction_id: 'required',
@@ -71,13 +69,18 @@ class Npl extends Controller {
                 let validate = validation.check(params, rules)
                 
                 if (validate.length > 0) {
-                    resMsg = this.response(false, null, validate.toString())
+                    return res.send(this.response(false, null, validate.toString()))
+                }
+
+                if (typeof(files.attach) == 'undefined') {
+                    return res.send(this.response(false, null, 'File Attachment harus di upload'))
                 }
                 
                 let dateNow = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
 
                 const randomNpl = helper.randomInt(899, 100)
                 const transId = `${dateNow}_${randomInt(99, 1)}` 
+                const code = token.userid + '-' + dateformat(helper.dateNow()+ ' ' + helper.timeNow(), 'yyyymmddHHMMss') 
                 
                 let data = {
                     TransID: transId,
@@ -91,7 +94,7 @@ class Npl extends Controller {
                     Online: 1,
                     Verifikasi: 0,
                     Attach: '',
-                    CodeUnik: params.code,
+                    CodeUnik: code,
                     Closed: 0,
                     Bank: '',
                     Cabang: '',
@@ -110,7 +113,7 @@ class Npl extends Controller {
                     attachmentName = `${token.userid}-${transId}${ext}`
                     const attachmentPath = `${config.path.npl}/${attachmentName}`
                     fs.writeFile(attachmentPath, files.attach.path, function (err) { 
-                        resMsg = that.response(false, null, err)
+
                     })
                     await model.update({Attach: attachmentName}, transId)
                 }

@@ -33,7 +33,7 @@ class AuctionDetail extends Controller {
             
             let m
             let params = req.body
-            if (this.redis !== false) {
+            if (this.redis !== false && params.length == 0) {
                 const client = redis.redisClient()
                 client.get(this.redisKey.index, async (err, cache) => {
                     if (err) throw err
@@ -51,7 +51,18 @@ class AuctionDetail extends Controller {
                 })
             }
             else {
-                m = await this.auctionDetailRepo.getAuctionUnit(params)
+                let where = []
+                if (params.merk != '') {
+                    where[table.unit + '.Merk = '] = params.brand
+                }
+                if (params.year != '' && params.year) {
+                    where[table.unit + '.Tahun = '] = params.start_year
+                }
+                if (params.start_price != '' && params.end_price) {
+                    where[table.auction_detail + '.HargaLimit >= '] = params.start_price
+                    where[table.auction_detail + '.HargaLimit <= '] = params.end_price
+                }
+                m = await this.auctionDetailRepo.getAuctionUnit(where)
                 return res.send(this.response(true, m, null))
             }
         }
@@ -122,7 +133,7 @@ class AuctionDetail extends Controller {
             let paramsBody = req.body
             let where = []
             if (paramsBody.merk != '') {
-              where[table.unit + '.Merk = '] = paramsBody.merk
+              where[table.unit + '.Merk = '] = paramsBody.brand
             }
             if (paramsBody.type != '') {
                 where[table.unit + '.Tipe like '] = `%${paramsBody.type}%`
