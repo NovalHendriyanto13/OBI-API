@@ -13,8 +13,12 @@ class AuctionDetailRepo {
         this.auction = new auctionModel()
     }
 
-    async getAuctionUnit(params) {
+    async getAuctionUnit(params, order='') {
       let data
+
+      if (order == '') {
+        order = table.auction_detail + '.NoLot ASC'
+      }
      
       const date = helper.dateNow()
       let where = []
@@ -45,7 +49,7 @@ class AuctionDetailRepo {
         .join(table.unit, table.unit + '.IdUnit =' + table.auction_detail + '.IdUnit', 'left')
         .join(table.unit_image, table.unit + '.IdUnit = ' + table.unit_image + '.IdUnit AND UrutDepan=1', 'left')
         .where(where)
-        .get(null, table.auction_detail + '.NoLot ASC')
+        .get(null, order)
  
        data = detail
  

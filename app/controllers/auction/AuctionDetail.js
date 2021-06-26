@@ -52,17 +52,38 @@ class AuctionDetail extends Controller {
             }
             else {
                 let where = []
+                let sort = ''
+                const sorts = {
+                    'nolot': table.auction_detail + '.NoLot ASC',
+                    'minprice': table.auction_detail + '.HargaLimit ASC',
+                    'maxprice': table.auction_detail + '.HargaLimit DESC',
+                }
                 if (params.brand != '') {
                     where[table.unit + '.Merk = '] = params.brand
                 }
-                if (params.year != '' && params.year) {
+                if (params.year != '' && params.year !='') {
                     where[table.unit + '.Tahun = '] = params.start_year
+                }
+                if (params.type != '') {
+                    where[table.unit + '.Tipe like '] = `%${params.type}%`
+                }
+                if (params.color != '') {
+                    where[table.unit + '.Warna like '] = `%${params.color}%`
+                }
+                if (params.transmission != '') {
+                    where[table.unit + '.Transmisi = '] = params.transmission
+                }
+                if (params.start_year != '' && params.end_year != '') {
+                    where[table.unit + '.Tahun >= '] = params.start_year
+                    where[table.unit + '.Tahun <= '] = params.end_year
                 }
                 if (params.start_price != '' && params.end_price) {
                     where[table.auction_detail + '.HargaLimit >= '] = params.start_price
                     where[table.auction_detail + '.HargaLimit <= '] = params.end_price
                 }
-                m = await this.auctionDetailRepo.getAuctionUnit(where)
+                console.log(where)
+                sort = sorts[params.sort]
+                m = await this.auctionDetailRepo.getAuctionUnit(where, sort)
                 return res.send(this.response(true, m, null))
             }
         }
@@ -88,7 +109,7 @@ class AuctionDetail extends Controller {
             let id = params.id
             let paramsBody = req.body
             let m
-
+            
             if (this.redis !== false) {
                 const client = redis.redisClient()
                 client.get(this.redisKey.detail + id, async (err, cache) => {
