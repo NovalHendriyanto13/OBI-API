@@ -163,11 +163,11 @@ class User extends Controller {
                     }))
                 }
 
-                // const mail = new Email()
-                // const subject = 'Registrasi User Baru (Otobid Indonesia)'
-                // const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
-                // Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
-                // await mail.sendOne(params.email, subject, emailMsg)
+                const mail = new Email()
+                const subject = 'Registrasi User Baru (Otobid Indonesia)'
+                const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
+                Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
+                await mail.sendOne(params.email, subject, emailMsg)
 
                 const expireIn = 365*60*60
                 let token = util.generateToken(dataUser, expireIn);
