@@ -33,7 +33,7 @@ class AuctionDetail extends Controller {
             
             let m
             let params = req.body
-            if (this.redis !== false && params.length == 0) {
+            if (this.redis !== false && Object.keys(params).length == 0) {
                 const client = redis.redisClient()
                 client.get(this.redisKey.index, async (err, cache) => {
                     if (err) throw err
@@ -52,7 +52,7 @@ class AuctionDetail extends Controller {
             }
             else {
                 let where = []
-                if (params.merk != '') {
+                if (params.brand != '') {
                     where[table.unit + '.Merk = '] = params.brand
                 }
                 if (params.year != '' && params.year) {
