@@ -2,6 +2,7 @@
 const path = require('path')
 const config = require(path.resolve('config/config'))
 const table = require(path.resolve('config/database')).tables
+const conn = require(path.resolve('config/database'))
 
 const Model = require(config.model_path + '/Model')
 
@@ -53,6 +54,19 @@ class User extends Model {
             FDOMISILI:''
         }
         return defaultFields
+    }
+
+    async getId(id) {
+        const db = await conn.db()
+        console.log(config)
+        let sql = "select *, "
+            sql = sql + "IF(FKTP IS NOT NULL, CONCAT('" + config.images.user + "', FKTP) , '') AS image_ktp, "
+            sql = sql + "IF(FNPWP IS NOT NULL, CONCAT('" + config.images.user + "', FNPWP) , '') AS image_npwp "
+            sql = sql + "from "+this.tablename
+            sql = sql + " where "+ this.primaryKey+ "=?"
+            console.log(sql)
+        let [rows, fields] = await db.execute(sql,[id])
+        return rows
     }
 }
 

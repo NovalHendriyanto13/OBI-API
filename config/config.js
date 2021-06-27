@@ -28,7 +28,7 @@ const config = {
     images: {
         unit: 'https://otobid.co.id/img/unit/',
         default_unit: 'https://otobid.co.id/img/not_image.jpg',
-        user: 'https://otobid.co.id/upload/document/user',
+        user: 'https://otobid.co.id/upload/document/user/',
         document_unit: 'https://otobid.co.id/upload/dokumeninternal/'
     },
     path: {
