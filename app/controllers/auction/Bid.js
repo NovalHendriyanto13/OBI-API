@@ -262,7 +262,7 @@ class Bid extends Controller {
                     await this.model.insert({
                         'IdAuctions': params.auction_id, 
                         'NoLOT': params.no_lot, 
-                        'Nominal': params.bid_price, 
+                        'Nominal': bidPrice, 
                         'BidTime': date1, 
                         'UserID': token.userid, 
                         'IdUnit': params.unit_id, 
