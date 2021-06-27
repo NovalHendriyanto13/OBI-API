@@ -29,12 +29,7 @@ class Article extends Controller {
     }
 
     async termCondition(req, res) {
-        // console.log(req.io)
-        var io = req.app.io
-        // socket.on('connect', () => {
-        //     console.log('Successfully connected!');
-        //   });
-        io.emit('tx','adsdasdasdasdasdas')
+        global.io.emit('tes','adsdasdasdasdasdas')
         let html = '<p><h3>SYARAT & KETENTUAN LELANG PT. OTO BID INDONESIA :</h3>'
             html = html + '<ol>'
             html = html + '<li>Calon pembeli yang berminat mengikuti lelang harus mendaftarkan diri melalui situs website PT. Oto Bid Indonesia (OTO BID) www.otobid.co.id untuk menjadi Peserta Lelang dengan wajib mengisi form/kolom yang tersedia sesuai dengan KTP yang berlaku dan wajib melengkapi dokumen fotokopi identitas diri/KTP dan NPWP.</li>'
