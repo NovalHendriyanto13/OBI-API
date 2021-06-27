@@ -381,6 +381,46 @@ class User extends Controller {
             }))
         } 
     }
+
+    async reqUpdate(req, res) {
+        try{
+            var params = req.body
+            
+            const rules = {
+                email: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+
+            if (validate.length > 0) {
+                throw new Error(validate.toString())
+            }
+            
+            const model = this.getModel()
+            let m = await model.getOne({Email: params.email})
+            
+            if (m.length <= 0) {
+                return res.send(this.response(false, null, "Data not found"))
+            }
+            const mail = new Email()
+            const subject = 'Request Update Profile'
+            const emailMsg = `<p>Kepada Otobid, Saya yang bernama : ${m[0].Nama}</p><p>Ingin mengajukan perubahan data profile saya</p>`
+
+            let sendMail = await mail.receiveOne(params.email, subject, emailMsg)
+            if (sendMail) {
+                return res.send(this.response(true,"Permohonan Perubahan data berhasil dikirim ", null))
+            }
+
+            return res.send(this.response(false, null, "Permohonan Perubahan data gagal"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
 }
 
 module.exports = User

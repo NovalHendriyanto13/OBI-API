@@ -101,4 +101,9 @@ module.exports = function(app, config) {
         let controller = new bid()
         controller.lastBid(req, res)
     })
+
+    app.post('/req-update', (req, res)=> {
+        let controller = new user()
+        controller.reqUpdate(req, res)
+    })
 }
