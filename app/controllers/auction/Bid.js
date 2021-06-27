@@ -287,6 +287,44 @@ class Bid extends Controller {
             }))
         } 
     }
+
+    async lastBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const get = await rBid.getLastBid(params.auction_id, params.unit_id)
+            if (get) {
+                return res.send(this.response(true, get, null))
+            }
+
+            return res.send(this.response(false, null, 'Can not get Last bid'))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
 }
 
 module.exports = Bid

@@ -51,6 +51,15 @@ class BidRepo {
 
         return m
     }
+
+    async getLastBid(auctionId, unitId) {
+        const m = await (this.bid.select('Nominal')).getOne({
+            'IdUnit': unitId,
+            'IdAuctions': auctionId, 
+        }, 'BidTime Desc')
+
+        return m
+    }
 }
 
 module.exports = BidRepo

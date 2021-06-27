@@ -96,4 +96,9 @@ module.exports = function(app, config) {
         let controller = new auctionDetail()
         controller.search(req, res)
     })
+
+    app.post('/last-bid', (req, res)=> {
+        let controller = new bid()
+        controller.lastBid(req, res)
+    })
 }
