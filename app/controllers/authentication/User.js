@@ -80,6 +80,18 @@ class User extends Controller {
                 
                 const rules = {
                     email: 'required|email',
+                    name: 'required',
+                    email: 'required',
+                    phone_no: 'required',
+                    identity_no: 'required',
+                    address: 'required',
+                    npwp_no: 'required',
+                    bank: 'required',
+                    branch_bank: 'required',
+                    account_no: 'required',
+                    account_name: 'required',
+                    birth_date: 'required',
+                    birth_place: 'required',
                 }
                 const validation = new Validation();
                 let validate = validation.check(params, rules)
@@ -404,7 +416,11 @@ class User extends Controller {
             }
             const mail = new Email()
             const subject = 'Request Update Profile'
-            const emailMsg = `<p>Kepada Otobid, Saya yang bernama : ${m[0].Nama}</p><p>Ingin mengajukan perubahan data profile saya</p>`
+            const emailMsg = `<p>Kepada PT OTOBID INDONESIA, <br>
+                Dengan ini saya mengajukan permohonan perubahan data, harap menghubungu saya:</p>
+                <table border=0><tr><td>Nama</td><td>:</td><td>${params.name}</td></tr>
+                <tr><td>User ID</td><td>:</td><td>${m['UserID']}</td></tr>
+                <tr><td>No Telp</td><td>:</td><td>${params.phone_no}</td></tr>`
 
             let sendMail = await mail.receiveOne(params.email, subject, emailMsg)
             if (sendMail) {

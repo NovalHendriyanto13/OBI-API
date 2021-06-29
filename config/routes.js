@@ -106,4 +106,9 @@ module.exports = function(app, config) {
         let controller = new user()
         controller.reqUpdate(req, res)
     })
+
+    app.get('/live-auction-unit/:id', (req, res)=> {
+        let controller = new auctionDetail()
+        controller.getLastLive(req, res)
+    })   
 }

@@ -18,7 +18,8 @@ app.get('/', (req, res) => {
 	res.send("Welcome to Otobid API Application!")
 })
 
+app.set('socketio', io)
+
 require('./config/routes')(app, config)
 require('./config/socket')(io)
 http.listen(port)
-global.io = io

@@ -19,6 +19,8 @@ class AuctionRepo {
           table.auction + '.Online,' +
           "DATE_FORMAT(" + table.auction + ".TglAuctions, '%a, %e %M %Y') as TglAuctions," +
           "DATE_FORMAT(" + table.auction + ".TglAuctions, '%Y-%m-%e') as r_TglAuctions," +
+          "DATE_FORMAT(" + table.auction + ".StartTime, '%T') AS StartTime," +
+          "DATE_FORMAT(" + table.auction + ".EndTime, '%T') AS EndTime," +
           table.area + '.Kota'
         ))
         .join(table.area, table.area + '.IdWilayah = ' + table.auction +'.IdWilayah')

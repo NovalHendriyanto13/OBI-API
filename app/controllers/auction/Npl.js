@@ -62,7 +62,10 @@ class Npl extends Controller {
                 const rules = {
                     an: 'required',
                     auction_id: 'required',
-                    qty: 'numeric'
+                    qty: 'numeric',
+                    type: 'required',
+                    deposit: 'required|numeric',
+                    nominal: 'required|numeric'
                 }
 
                 const validation = new Validation();
