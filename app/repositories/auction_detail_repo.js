@@ -68,7 +68,7 @@ class AuctionDetailRepo {
      }
      let data = await this.auction.select(
         "IdAuctions," + 
-        "DATE_FORMAT(TglAuctions, '%e %M %Y') AS TglAuctions," +
+        "DATE_FORMAT(TglAuctions, '%d %M %Y') AS TglAuctions," +
         "DATE_FORMAT(StartTime, '%T') AS StartTime," +
         "DATE_FORMAT(EndTime, '%T') AS EndTime," +
         "DATE_FORMAT(TglAuctions, '%Y-%m-%e') as r_TglAuctions," +
@@ -122,7 +122,7 @@ class AuctionDetailRepo {
 
     let data = await (this.auctionDetail.select(
       table.auction + '.IdAuctions,' +
-      "DATE_FORMAT(" + table.auction + ".TglAuctions, '%e %M %Y') AS TglAuctions," +
+      "DATE_FORMAT(" + table.auction + ".TglAuctions, '%d %M %Y') AS TglAuctions," +
       "DATE_FORMAT(" + table.auction + ".StartTime, '%T') AS StartTime," +
       "DATE_FORMAT(" + table.auction + ".EndTime, '%T') AS EndTime," +
       table.auction + '.Online,' +
