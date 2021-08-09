@@ -9,15 +9,29 @@ class Model {
         this.primaryKey = 'id'
         this.column = '*'
         this.debugSql = false
+        this.db
+    }
+    async connectDB() {
+        this.db = await conn.db()
+        return this.db
+    }
+    async connect() {
+        if (this.db == null) {
+            this.db = await conn.db()
+        }
+        if (this.db.state == 'disconnected') {
+            this.db = await conn.db()
+        }
+        return this.db
     }
     async getAll() {
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute("select "+ this.column +" from "+this.tablename)
         return rows
     }
 
     async getId(id) {
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute("select "+ this.column +" from "+this.tablename +" where "+this.primaryKey+" =?",[id])
         return rows
     }
@@ -47,7 +61,7 @@ class Model {
             condition = condition + " order by " + order
         }
 
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q + condition, filter)
         return rows
     }
@@ -77,7 +91,7 @@ class Model {
             condition = condition + " order by " + order
         }
 
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q + condition + ' LIMIT 1', filter)
         return rows
     }
@@ -115,7 +129,7 @@ class Model {
         let valueSubstr = (values.length) - 2
         q = q + "("+ field.substr(0, fieldSubstr) +") values (" + values.substring(0, valueSubstr) +")"
 
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q, data)
         return rows
     }
@@ -134,7 +148,7 @@ class Model {
         q = q +  values.substring(0, valueSubstr)
         q = q + ` WHERE ${this.primaryKey} = '${id}'`
         
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q, data)
         return rows
     }
@@ -160,13 +174,32 @@ class Model {
         if (condition !== '') {
             condition = " where " + condition.substr(0, (condition.length - 4))
         }
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q + condition, data)
         return rows
     }
+    
+     async remove() {
+        let data = []
+        let q = `delete from ${this.tablename}`
+
+        let condition = ""
+        if (typeof(this.whereFilter) != 'undefined') {
+            condition = condition + this.whereFilter
+        }
+
+        if (condition !== '') {
+            condition = " where " + condition.substr(0, (condition.length - 4))
+            const db = await this.connect()
+            let [rows, fields] = await db.execute(q + condition, data)
+        } else {
+            return false
+        }
+        return true;
+    }
 
     async raw(q) {
-        const db = await conn.db()
+        const db = await this.connect()
         let [rows, fields] = await db.execute(q)
         return rows
     }

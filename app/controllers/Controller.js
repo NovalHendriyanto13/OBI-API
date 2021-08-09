@@ -24,8 +24,8 @@ class Controller {
             }
 
             let m
+            let params = req.body
             if (this.redis !== false) {
-                let params = req.body
                 const client = redis.redisClient()
 
                 client.get(this.redisKey.index, async (err, cache) => {
@@ -48,7 +48,12 @@ class Controller {
                 })
             }
             else {
-                m = await model.getAll()
+                if (params !== null) {
+                    m = await model.get(params)
+                }
+                else {
+                    m = await model.getAll()
+                }
                 return res.send(this.response(true, m, null))
             }
         }

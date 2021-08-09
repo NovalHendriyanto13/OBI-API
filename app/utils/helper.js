@@ -15,11 +15,17 @@ let dateNow = function() {
 }
 
 let timeNow = function() {
-  var currentdate = new Date().toLocaleTimeString("en-US", { timeZone:  "Asia/Jakarta"}); 
-  return currentdate
-  // return currentdate.getHours() + ":"  
-  //   + currentdate.getMinutes() + ":" 
-  //   + currentdate.getSeconds();
+  let [hour, minute, second] = new Date().toLocaleTimeString("en-US", { timeZone:  "Asia/Jakarta"}).split(':')
+  const [s, ampm] = second.split(' ')
+  
+  if (ampm === 'PM' && hour != 12) {
+      hour = parseInt(hour) + 12
+  }
+  if (hour < 10) {
+    hour = '0' + hour
+  }
+
+  return `${hour}:${minute}:${s}` 
 }
 
 let convertDate = function(date) {

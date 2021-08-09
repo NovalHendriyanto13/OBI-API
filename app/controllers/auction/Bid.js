@@ -29,8 +29,23 @@ class Bid extends Controller {
             }
 
             const n = new bidRepo()
+            let promiseBid = []
             
             let m = await n.getList(token.userid)
+            for (let i = 0, {length} = m; i < length; i += 1) {
+                let dataBid = m[i]
+                promiseBid.push(n.getWinnerBid(dataBid.IdAuctions, dataBid.IdUnit))
+            }
+            
+            const execPromise = await Promise.all(promiseBid);
+            execPromise.filter((value, index) => {
+                if (value.length > 0) {
+                 m[index].WinnerTime = value[0].BidTime;
+                } else {
+                  m[index].WinnerTime = "-";
+                }
+                return true;
+            });
             
             return res.send(this.response(true, m, null))
         }
@@ -113,10 +128,6 @@ class Bid extends Controller {
                 throw new Error('Nominal Bid Harus Kelipatan ' + config.limit_bid[type].toString())
             }
 
-            if ((bidPrice < maxPrice)) {
-                throw new Error('Nominal Bid Harus Lebih dari ' + maxPrice.toString())
-            }
-
             const checkUpsert = await this.model.getOne({
                 'IdAuctions': params.auction_id,
                 'NoLOT': params.no_lot,
@@ -148,10 +159,10 @@ class Bid extends Controller {
                         'BidTime': date1, 
                         'UserID': token.userid, 
                         'IdUnit': params.unit_id, 
-                        'Online': 1, 
+                        'Online': 'tender', 
                         'statusbidx': 'berjalan',
                         'Operator': 0,
-                        'nplx': ''
+                        'nplx': params.npl
                     })
                 }
                 else {
@@ -180,6 +191,7 @@ class Bid extends Controller {
             }
 
             var params = req.body
+            params.bid_price = 0
             const rules = {
                 npl: 'required',
                 auction_id: 'required',
@@ -216,6 +228,7 @@ class Bid extends Controller {
             const priceLimit = auctionUnitInfo[0].HargaLimit
             const auctionDate = auctionUnitInfo[0].TglAuctions
             const auctionEndTime = auctionUnitInfo[0].EndTime
+            const online = auctionUnitInfo[0].Online
 
             const date1 = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
             const date3 = dateformat(auctionDate + ' ' + auctionEndTime, 'yyyy-mm-dd HH:MM:ss')
@@ -229,11 +242,16 @@ class Bid extends Controller {
 
             const maxBid = await rBid.maxBid(params.auction_id, params.unit_id, params.no_lot)
             let maxPrice = priceLimit
+            let firstBid = true
             if (maxBid != null && maxBid.length > 0) {
+                if (maxBid[0].UserID == token.userid) {
+                    throw new Error('Nominal Bid Anda masih yang tertinggi')
+                }
                 maxPrice = maxBid[0].Nominal
+                firstBid = false
             }
 
-            const bidPrice = maxPrice + config.limit_bid[type]
+            const bidPrice = firstBid ? priceLimit : maxPrice + config.limit_bid[type]
             
             const checkUpsert = await this.model.getOne({
                 'IdAuctions': params.auction_id,
@@ -266,11 +284,12 @@ class Bid extends Controller {
                         'BidTime': date1, 
                         'UserID': token.userid, 
                         'IdUnit': params.unit_id, 
-                        'Online': 1, 
+                        'Online': online, 
                         'statusbidx': 'berjalan',
                         'Operator': 0,
                         'nplx': ''
                     })
+                    params.bid_price = bidPrice
                 }
                 else {
                     throw new Error('Error! NPL anda sudah habis')
@@ -310,12 +329,107 @@ class Bid extends Controller {
             }
 
             const rBid = new bidRepo()
-            const get = await rBid.getLastBid(params.auction_id, params.unit_id)
-            if (get) {
-                return res.send(this.response(true, get, null))
+            const getLast = await rBid.getLastBid(params.auction_id, params.unit_id)
+            if (getLast) {
+                return res.send(this.response(true, getLast, null))
             }
 
             return res.send(this.response(false, null, 'Can not get Last bid'))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
+    
+    async lastUserBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const getLast = await rBid.getLastUserBid(params.auction_id, params.unit_id, token.userid)
+            if (getLast) {
+                return res.send(this.response(true, getLast, null))
+            }
+
+            return res.send(this.response(false, null, 'Can not get Last bid'))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
+    
+    async cancelBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+                no_lot: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const rAuctionDetail = new auctionDetailRepo()
+            const getUnit = await rAuctionDetail.auctionDetail.getOne({
+                IdAuctions: params.auction_id,
+                IdUnit: params.unit_id,
+                NoLot: params.no_lot,
+            })
+            if (getUnit.length > 0) {
+                const status = getUnit[0]['Status']
+                if (status != '2') {
+                    const del = await this.model.where({
+                        'IdAuctions =': params.auction_id,
+                        'IdUnit =': params.unit_id,
+                        'NoLOT =': params.no_lot,
+                        'UserID =': token.userid
+                    }).remove()
+                    
+                    return res.send(this.response(del, params, del ? 'Deleting Unit is success' : 'Deleting Unit is failed'))
+                }
+                else {
+                    return res.send(this.response(false, null, 'Unit Has Been Sold'))
+                }
+            }
+
+            return res.send(this.response(false, null, 'Can not delete bid'))     
         }
         catch(err) {
             console.log(err)

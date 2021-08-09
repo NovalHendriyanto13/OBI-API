@@ -15,7 +15,7 @@ class AuctionDetail extends Controller {
         super()
         this.setModel(new auctionDetailModel())
         this.auctionDetailRepo = new auctionDetailRepo()
-        this.redis= true
+        this.redis= false
         this.redisKey= {
             index: variable.redisKey.AUCTION_DETAIL_UNIT,
             detail: variable.redisKey.AUCTION_DETAIL,
@@ -81,7 +81,6 @@ class AuctionDetail extends Controller {
                     where[table.auction_detail + '.HargaLimit >= '] = params.start_price
                     where[table.auction_detail + '.HargaLimit <= '] = params.end_price
                 }
-                console.log(where)
                 sort = sorts[params.sort]
                 m = await this.auctionDetailRepo.getAuctionUnit(where, sort)
                 return res.send(this.response(true, m, null))

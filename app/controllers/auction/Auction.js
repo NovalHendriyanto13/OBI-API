@@ -15,7 +15,7 @@ class Auction extends Controller {
         super()
         this.setModel(new auctionModel())
         this.auctionRepo = new auctionRepo()
-        this.redis= true
+        this.redis= false
         this.redisKey= {
             index: variable.redisKey.AUCTION,
             nowNext: variable.redisKey.AUCTION_NOW_NEXT,
@@ -32,7 +32,11 @@ class Auction extends Controller {
             }
 
             let m
+            let resData = []
             const date = helper.dateNow()
+            const timeNow = helper.timeNow()
+            
+            this.redis = false
             if (this.redis !== false) {
                 const client = redis.redisClient()
 
@@ -45,7 +49,7 @@ class Auction extends Controller {
                     else {
                         m = await this.auctionRepo.getAuction(date)
                         if (m.length > 0) {
-                            await util.redisSet(this.redisKey.index + date, m)
+                            await util.redisSet(this.redisKey.index + date, resData)
                         }
                         
                         return res.send(this.response(true, m, null))
@@ -77,11 +81,12 @@ class Auction extends Controller {
             
             let m
             const date = helper.dateNow()
+            const timeNow = helper.timeNow()
             let n = [{
                 'now' : [],
                 'next' : []
             }]
-
+            this.redis = false
             if (this.redis !== false) {
                 const client = redis.redisClient()
                 client.get(this.redisKey.nowNext + date, async (err, cache) => {
@@ -95,7 +100,10 @@ class Auction extends Controller {
 
                         for (const i in m) {
                             if ((date) == m[i]['r_TglAuctions']) {
-                                n[0]['now'].push(m[i])
+                                // if (m[i]['EndTime'] != '00:00:00' && m[i]['EndTime'] > timeNow)
+                                //     n[0]['now'].push(m[i])
+                                // else if (m[i]['EndTime'] == '00:00:00')
+                                    n[0]['now'].push(m[i])
                             }
                             else {
                                 n[0]['next'].push(m[i])
@@ -111,10 +119,12 @@ class Auction extends Controller {
             }
             else {
                 m = await this.auctionRepo.getAuction(date)
-
                 for (const i in m) {
                     if ((date) == m[i]['r_TglAuctions']) {
-                        n[0]['now'].push(m[i])
+                        // if (m[i]['StartTime'] != '00:00:00' && m[i]['StartTime'] < timeNow)
+                        //     n[0]['now'].push(m[i])
+                        // else if (m[i]['StartTime'] == '00:00:00')
+                            n[0]['now'].push(m[i])
                     }
                     else {
                         n[0]['next'].push(m[i])

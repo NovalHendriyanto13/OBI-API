@@ -17,8 +17,8 @@ class NplRepo {
             table.npl + '.NPL,' +
             table.npl + '.Deposit,' +
             table.npl + '.Nominal,' +
-            "IF(" + table.npl + ".Closed = 0, 'ACTIVE', IF(" + table.npl + ".Closed = 1, 'MENANG', 'NOT ACTIVE')) AS Status," +
-            "IF(" + table.npl + ".Verifikasi = 0, 'BELOM TERVERIFIKASI', 'TERVERIFIKASI') AS Verifikasi," +
+            table.npl + '.Closed,' +
+            table.npl + '.Verifikasi,' +
             table.npl + ".NoLot," +
             "DATE_FORMAT(" + table.auction + ".TglAuctions, '%e %M %Y') AS TglAuctions"
         ))
@@ -70,11 +70,11 @@ class NplRepo {
 
     async getRemaining(userId, auctionId) {
         const m = await (this.npl.select('NPL')).get({
-            'UserID': userId,
-            'IdAuctions': auctionId, 
-            'Online': '1',
-            'Verifikasi': '1',
-            'Closed': '0'
+            UserID: userId,
+            IdAuctions: auctionId, 
+            Online: '1',
+            Verifikasi: '1',
+            Closed: '0'
         })
 
         return m

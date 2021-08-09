@@ -15,8 +15,9 @@ class Unit extends Controller {
     constructor() {
         super()
         this.setModel(new unitModel())
-        this.redis= true
+        this.redis= false
         this.redisKey= {
+            index: variable.redisKey.UNIT_DETAIL,
             detail: variable.redisKey.UNIT_DETAIL,
         }
     }
@@ -64,12 +65,12 @@ class Unit extends Controller {
                 m = await r.getDetail(id)
 
                 const dm = new documentImageModel()
-                let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Image) AS Image").get({"IdUnit" : id})
-                m[0]['documents'] = documentImages
+                let documentImages = await dm.select("CONCAT('" + config.images.document_unit +"', Dokumen) AS Image").get({"IdUnit" : id})
+                m[0].documents = documentImages
 
                 const um = new unitImageModel()
                 let unitImages = await um.select("CONCAT('" + config.images.unit + "', Image) As Image").get({"IdUnit" : id})
-                m[0]['galleries'] = unitImages
+                m[0].galleries = unitImages
                 
                 return res.send(this.response(true, m, null))
             }

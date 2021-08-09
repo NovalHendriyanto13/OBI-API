@@ -15,9 +15,16 @@ class BidRepo {
         where[table.bid + '.Online'] = 'tender'
 
         const m = await (this.bid.select(
+            table.bid + '.IdUnit, ' +
             table.bid + '.NoLOT,' +
             table.bid + '.statusbidx,' +
             table.unit + '.NoPolisi,' +
+            table.unit + '.Merk,' +
+            table.unit + '.Tipe,' +
+            table.unit + '.Tahun,' +
+            table.bid + '.Nominal,' +
+            "DATE_FORMAT(" + table.bid + ".BidTime, '%e %M %Y %H:%i:%s') AS BidTime," +
+            table.auction_detail + '.HargaTerbentuk,' +
             table.auction + '.IdAuctions,' + 
             "DATE_FORMAT(" + table.auction + ".TglAuctions, '%e %M %Y') AS TglAuctions"
         ))
@@ -37,7 +44,7 @@ class BidRepo {
         where['IdUnit'] = idUnit
         where['NoLot'] = noLot
 
-        const m = await this.bid.select('Nominal').getOne(where, 'Nominal DESC')
+        const m = await this.bid.select('UserID, Nominal').getOne(where, 'Nominal DESC')
 
         return m
     }
@@ -53,13 +60,34 @@ class BidRepo {
     }
 
     async getLastBid(auctionId, unitId) {
-        const m = await (this.bid.select('Nominal')).getOne({
+        const m = await (this.bid.select("Nominal, DATE_FORMAT(BidTime, '%e %M %Y %H:%i:%s') AS BidTime")).getOne({
             'IdUnit': unitId,
             'IdAuctions': auctionId, 
         }, 'BidTime Desc')
 
         return m
     }
+    
+    async getWinnerBid(auctionId, unitId) {
+        const m = await (this.bid.select("Nominal, DATE_FORMAT(BidTime, '%e %M %Y %H:%i:%s') AS BidTime")).getOne({
+            'IdUnit': unitId,
+            'IdAuctions': auctionId,
+            'statusbidx': 'menang'
+        }, 'BidTime Desc')
+
+        return m
+    }
+    
+    async getLastUserBid(auctionId, unitId, userId) {
+        const m = await (this.bid.select('Nominal')).getOne({
+            'IdUnit': unitId,
+            'IdAuctions': auctionId,
+            'UserID': userId,
+        }, 'BidTime Desc')
+
+        return m
+    }
+    
 }
 
 module.exports = BidRepo

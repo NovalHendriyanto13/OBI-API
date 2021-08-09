@@ -39,6 +39,7 @@ class AuctionDetailRepo {
           table.unit + '.Transmisi, ' +
           table.unit + '.Warna, ' +
           table.unit + '.Jenis, ' +
+          table.auction_detail + '.Status,' +
           table.auction + '.Online, ' +
           "IF(" + table.unit + ".GradeMesin = 4, 'A',IF("+ table.unit +".GradeMesin = 3, 'B',IF("+ table.unit +".GradeMesin = 2, 'C',IF("+ table.unit +".GradeMesin = 1, 'D','E')))) as GradeMesin, " +
           "IF(" + table.unit + ".GradeInterior = 4, 'A',IF("+ table.unit +".GradeInterior = 3, 'B',IF("+ table.unit +".GradeInterior = 2, 'C',IF("+ table.unit +".GradeInterior = 1, 'D','E')))) as GradeInterior, " +
@@ -96,6 +97,7 @@ class AuctionDetailRepo {
          table.unit + '.Transmisi, ' +
          table.unit + '.Warna, ' +
          table.unit + '.Jenis, ' +
+         table.auction_detail + '.Status,' +
          "IF(" + table.unit + ".GradeMesin = 4, 'A',IF("+ table.unit +".GradeMesin = 3, 'B',IF("+ table.unit +".GradeMesin = 2, 'C',IF("+ table.unit +".GradeMesin = 1, 'D','E')))) as GradeMesin, " +
          "IF(" + table.unit + ".GradeInterior = 4, 'A',IF("+ table.unit +".GradeInterior = 3, 'B',IF("+ table.unit +".GradeInterior = 2, 'C',IF("+ table.unit +".GradeInterior = 1, 'D','E')))) as GradeInterior, " +
          "IF(" + table.unit + ".GradeExterior = 4, 'A',IF("+ table.unit +".GradeExterior = 3, 'B',IF("+ table.unit +".GradeExterior = 2, 'C',IF("+ table.unit +".GradeExterior = 1, 'D','E')))) as GradeExterior, " +
@@ -145,7 +147,7 @@ class AuctionDetailRepo {
     let where = []
     where[table.auction + '.IdAuctions ='] = idAuction
     where[table.auction_detail + '.Open ='] = 1
-    where[table.auction_detail + '.Close ='] = 0
+    where[table.auction_detail + '.Close ='] = 1
     
     let detail = await (this.auctionDetail.select(
         table.auction + '.IdAuctions,' +
@@ -176,6 +178,10 @@ class AuctionDetailRepo {
      const data = detail
 
      return data
+  }
+  
+  async getOneWanpress(params) {
+      return await this.auctionDetail.getOne(params)
   }
 }
 

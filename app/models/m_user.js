@@ -57,14 +57,12 @@ class User extends Model {
     }
 
     async getId(id) {
-        const db = await conn.db()
-        console.log(config)
+        const db = await this.connect()
         let sql = "select *, "
             sql = sql + "IF(FKTP IS NOT NULL, CONCAT('" + config.images.user + "', FKTP) , '') AS image_ktp, "
             sql = sql + "IF(FNPWP IS NOT NULL, CONCAT('" + config.images.user + "', FNPWP) , '') AS image_npwp "
             sql = sql + "from "+this.tablename
             sql = sql + " where "+ this.primaryKey+ "=?"
-            console.log(sql)
         let [rows, fields] = await db.execute(sql,[id])
         return rows
     }
