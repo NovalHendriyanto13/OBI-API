@@ -1,17 +1,24 @@
 'use strict'
 const path = require('path')
-const bcrypt = require('bcrypt')
+const fs = require('fs')
+const formidable = require('formidable')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
+const Validation = require(path.resolve('app/library/Validation'))
+const Email = require(path.resolve('app/library/Email'))
 
 const Controller = require(config.controller_path + '/Controller')
 const userModel = require(config.model_path + '/m_user')
-const groupModel = require(config.model_path + '/m_group')
 
 class User extends Controller {
     constructor() {
         super()
         this.setModel(new userModel())
+        this.redis = true
+        this.redisKey= {
+            detail: variable.redisKey.USER,
+        }
     }
 
     async login(req, res) {
@@ -19,41 +26,412 @@ class User extends Controller {
         var that = this
         try{
             const model = this.getModel()
-            let m = await model.get({username : params.username})
+            const m = await model.raw(`SELECT * FROM ${model.tablename} WHERE Email= '${params.username}' OR Username= '${params.username}'`)
+             
             if (m.length <= 0)
                 throw new Error('Username not found!')
 
-            let hash = m[0].password.replace(/^\$2y(.+)$/i, '$2a$1');
-            bcrypt.compare(params.password, hash, async function(err, result) {
-                if (result == false) {
-                    res.send(that.response(result, null, "Invalid Password!"))
-                }
-                else {
-                    const group = new groupModel()
-                    const groupData = await group.getId(m[0].group_id)
-                    let dataUser = {
-                        username: m[0].username,
-                        email: m[0].email,
-                        group: groupData[0].name 
-                    }
-                    const expireIn = 1*60*60
-                    let token = util.generateToken(dataUser, expireIn);
-                    let responseToken = {
-                        data: {
-                            email: m[0].email,
-                            name: m[0].name,
-                            group: groupData[0].name
-                        }, 
-                        token: token,
-                        expire_in: expireIn
-                    }
-                    res.send(that.response(result, responseToken, null))
-                }
-            });
+            if (params.password !== m[0].Password)
+                throw new Error('Password is not match')
+
+            let dataUser = {
+                userid: m[0].UserID,
+                username: m[0].Username,
+                email: m[0].Email,
+                group: m[0].Kategori
+            }
+
+            const expireIn = 365*60*60
+            let token = util.generateToken(dataUser, expireIn);
+            let responseToken = {
+                data: {
+                    id: m[0].UserID,
+                    email: m[0].Email,
+                    name: m[0].Nama,
+                    group: m[0].Kategori
+                }, 
+                token: token,
+                expire_in: expireIn
+            }
+            return res.send(that.response(true, responseToken, null))
         }
         catch(err) {
             console.log(err)
-            res.send(this.response(false, null, {
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async register(req, res) {
+        var that = this
+        const defaultPassword = 'Otobid123'
+
+        try{
+            const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
+            form.parse(req, async (err, fields, files) => {
+                if (err) {
+                    throw new Error(err)
+                }
+
+                const model = that.getModel()
+                var params = fields
+                
+                const rules = {
+                    email: 'required|email',
+                    name: 'required',
+                    email: 'required',
+                    phone_no: 'required',
+                    identity_no: 'required',
+                    address: 'required',
+                    npwp_no: 'required',
+                    bank: 'required',
+                    branch_bank: 'required',
+                    account_no: 'required',
+                    account_name: 'required',
+                    birth_date: 'required',
+                    birth_place: 'required',
+                }
+                const validation = new Validation();
+                let validate = validation.check(params, rules)
+                
+                if (validate.length > 0) {
+                    return res.send(this.response(false, null, {
+                        code: 500,
+                        message: validate
+                    }))
+                }
+
+                if (typeof(files.ktp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File KTP harus di upload'))
+                }
+
+                if (typeof(files.npwp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File NPWP harus di upload'))
+                }
+
+                const check = await model.get({'Email': params.email})
+                if (check.length > 0) {
+                    return res.send(this.response(false, null, 'Email sudah teregistrasi'))
+                }
+
+                let data = {
+                    Nama: params.name,
+                    Email: params.email,
+                    NoTelp: params.phone_no,
+                    NoKTP: params.identity_no,
+                    NoNPWP: params.npwp_no,
+                    Alamat: params.address,
+                    Bank: params.bank,
+                    Cabang: params.branch_bank,
+                    NoRek: params.account_no,
+                    AtasNama: params.account_name,
+                    TempatLahir: params.birth_place,
+                    TglLahir: params.birth_date,
+                    Password: defaultPassword
+                }
+
+                let process = await model.insert(data)
+                let dataUser = {
+                    userid: process.insertId,
+                    username: '',
+                    email: data.Email,
+                    group: 'user'
+                }
+                let ktpName = ''
+                let npwpName = ''
+                let errUpload = []
+                if (files.ktp_file.size <= 0) {
+                    fs.unlinkSync(files.ktp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.ktp_file.name)
+                    ktpName = `KTP_${process.insertId}${ext}`
+                    const ktpNamePath = `${config.path.user}/${ktpName}`
+                    fs.rename(files.ktp_file.path, ktpNamePath, function (err) { 
+                        
+                    })
+                }
+
+                if (files.npwp_file.size <= 0) {
+                    fs.unlinkSync(files.npwp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.npwp_file.name)
+                    npwpName = `NPWP_${process.insertId}${ext}`
+                    const npwpNamePath = `${config.path.user}/${npwpName}`
+                    fs.rename(files.npwp_file.path, npwpNamePath, function (err) { 
+                        
+                    })
+                }
+                if (errUpload.length <= 0) {
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, process.insertId)
+                }
+                else {
+                    return res.send(this.response(false, null, {
+                        code: 501,
+                        message: errUpload
+                    }))
+                }
+
+                const mail = new Email()
+                const subject = 'Registrasi User Baru (Otobid Indonesia)'
+                const emailMsg = `<p>Hi, ${params.name}</p><p>Terima kasih telah mendaftar di Otobid Indonesia.
+                Anda dapat melakukan login dengan Username: ${params.email} dan Password: ${defaultPassword}</p>`
+                await mail.sendOne(params.email, subject, emailMsg)
+
+                const expireIn = 365*60*60
+                let token = util.generateToken(dataUser, expireIn);
+                let responseToken = {
+                    data: {
+                        id: process.insertId,
+                        email: data.Email,
+                        name: data.Nama,
+                        group: 'user'
+                    }, 
+                    token: token,
+                    expire_in: expireIn
+                }
+                return res.send(that.response(true, responseToken, null))
+            })
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async update(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.update')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            const form = formidable({ multiples: true, uploadDir: config.path.user, keepExtensions: true })
+            form.parse(req, async (err, fields, files) => {
+                if (err) {
+                    throw new Error(err)
+                }
+
+                var params = fields
+                
+                const rules = {
+                    birth_date: 'required',
+                    birth_place: 'required'
+                }
+                const validation = new Validation();
+                let validate = validation.check(params, rules)
+                
+                if (validate.length > 0) {
+                    return res.send(this.response(false, null, {
+                        code: 500,
+                        message: validate
+                    }))
+                }
+
+                if (typeof(files.ktp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File KTP harus di upload'))
+                }
+
+                if (typeof(files.npwp_file) == 'undefined') {
+                    return res.send(this.response(false, null, 'File NPWP harus di upload'))
+                }
+
+                let data = {
+                    Nama: params.name,
+                    NoTelp: params.phone_no,
+                    NoKTP: params.identity_no,
+                    NoNPWP: params.npwp_no,
+                    Alamat: params.address,
+                    Bank: params.bank,
+                    Cabang: params.branch_bank,
+                    NoRek: params.account_no,
+                    AtasNama : params.account_name,
+                    TempatLahir: params.birth_place,
+                    TglLahir: params.birth_date,
+                }
+                
+                let update = await model.update(data, token.userid)
+
+                let ktpName = ''
+                let npwpName = ''
+                let errUpload = []
+                if (files.ktp_file.size <= 0) {
+                    fs.unlinkSync(files.ktp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.ktp_file.name)
+                    ktpName = `KTP_${token.userid}${ext}`
+                    const ktpNamePath = `${config.path.user}/${ktpName}`
+                    fs.rename(files.ktp_file.path, ktpNamePath, function (err) { 
+                        
+                    })
+                }
+
+                if (files.npwp_file.size <= 0) {
+                    fs.unlinkSync(files.npwp_file.path)
+                }
+                else {
+                    const ext = path.extname(files.npwp_file.name)
+                    npwpName = `NPWP_${token.userid}${ext}`
+                    const npwpNamePath = `${config.path.user}/${npwpName}`
+                    fs.rename(files.npwp_file.path, npwpNamePath, function (err) { 
+                        
+                    })
+                }
+                if (errUpload.length <= 0) {
+                    await model.update({FKTP: ktpName, FNPWP: npwpName}, token.userid)
+                }
+                else {
+                    return res.send(this.response(false, null, {
+                        code: 501,
+                        message: errUpload
+                    }))
+                }
+
+                return res.send(this.response(true, "Update Profile is Success", null))
+            })
+            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async changePassword(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
+            var params = req.body
+            
+            const rules = {
+                old_password: 'required',
+                password: 'required',
+                re_password: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+            let m = await model.getId(token.userid)
+            
+            if (params.old_password !== m[0].Password)
+                throw new Error('Old Password is not match')
+
+            if (params.password !== params.re_password)
+                throw new Error('Password is not match')
+                
+            let update = await model.update({Password: params.password}, token.userid)
+            if (update)
+                return res.send(this.response(true, "Change Password is Success", null))
+
+            return res.send(this.response(false, null, "Change Password is Failed"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async forgot(req, res) {
+        try{
+            var params = req.body
+            
+            const rules = {
+                email: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+
+            if (validate.length > 0) {
+                throw new Error(validate.toString())
+            }
+            
+            const model = this.getModel()
+            let m = await model.getOne({Email: params.email})
+            
+            if (m.length <= 0) {
+                return res.send(this.response(false, null, "Data not found"))
+            }
+            const mail = new Email()
+            const subject = 'Lupa Kata Sandi (Otobid Indonesia)'
+            const emailMsg = `<p>Hi, ${m[0].Nama}</p><p>Kata Sandi Anda adalah :<b>${m[0].Password}</b></p>`
+
+            let sendMail = await mail.sendOne(params.email, subject, emailMsg)
+            if (sendMail) {
+                return res.send(this.response(true,"Your Password has been sent to your email :" + params.email, null))
+            }
+
+            return res.send(this.response(false, null, "Change Password is Failed"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async reqUpdate(req, res) {
+        try{
+            var params = req.body
+            
+            const rules = {
+                email: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+
+            if (validate.length > 0) {
+                throw new Error(validate.toString())
+            }
+            
+            const model = this.getModel()
+            let m = await model.getOne({Email: params.email})
+            
+            if (m.length <= 0) {
+                return res.send(this.response(false, null, "Data not found"))
+            }
+            const mail = new Email()
+            const subject = 'Request Update Profile'
+            const emailMsg = `<p>Kepada PT OTOBID INDONESIA, <br>
+                Dengan ini saya mengajukan permohonan perubahan data, harap menghubungu saya:</p>
+                <table border=0><tr><td>Nama</td><td>:</td><td>${params.name}</td></tr>
+                <tr><td>User ID</td><td>:</td><td>${m['UserID']}</td></tr>
+                <tr><td>No Telp</td><td>:</td><td>${params.phone_no}</td></tr>`
+
+            let sendMail = await mail.receiveOne(params.email, subject, emailMsg)
+            if (sendMail) {
+                return res.send(this.response(true,"Permohonan Perubahan data berhasil dikirim ", null))
+            }
+
+            return res.send(this.response(false, null, "Permohonan Perubahan data gagal"))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))

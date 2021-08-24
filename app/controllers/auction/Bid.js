@@ -1,0 +1,505 @@
+'use strict'
+const path = require('path')
+const fs = require('fs')
+const dateformat = require('dateformat')
+const datediff = require('date-diff')
+const config = require(path.resolve('config/config'))
+const util = require(path.resolve('app/utils/util'))
+const helper = require(path.resolve('app/utils/helper'))
+
+const Controller = require(config.controller_path + '/Controller')
+const Validation = require(path.resolve('app/library/Validation'))
+const bidModel = require(config.model_path + '/m_bid')
+const bidRepo = require(config.repo_path + '/bid_repo')
+const nplRepo = require(config.repo_path + '/npl_repo')
+const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
+
+class Bid extends Controller {
+    constructor() {
+        super()
+        this.setModel(new bidModel())
+    }
+
+    async index(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            const n = new bidRepo()
+            let promiseBid = []
+            
+            let m = await n.getList(token.userid)
+            for (let i = 0, {length} = m; i < length; i += 1) {
+                let dataBid = m[i]
+                promiseBid.push(n.getWinnerBid(dataBid.IdAuctions, dataBid.IdUnit))
+            }
+            
+            const execPromise = await Promise.all(promiseBid);
+            execPromise.filter((value, index) => {
+                if (value.length > 0) {
+                 m[index].WinnerTime = value[0].BidTime;
+                } else {
+                  m[index].WinnerTime = "-";
+                }
+                return true;
+            });
+            
+            return res.send(this.response(true, m, null))
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async submitBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                npl: 'required',
+                auction_id: 'required',
+                unit_id: 'required',
+                type: 'required',
+                no_lot: 'required',
+                bid_price: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const type = params.type
+            const bidPrice = params.bid_price
+            const rNpl = new nplRepo()
+            const rAuctionDetail = new auctionDetailRepo()
+            const rBid = new bidRepo()
+            
+            const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
+            if (validNPL == null || validNPL.length <= 0) {
+                throw new Error('Invalid NPL Number')
+            }
+            
+            const auctionUnitInfo = await rAuctionDetail.auctionInfo(params.auction_id, params.unit_id, params.no_lot)
+            if (auctionUnitInfo == null || auctionUnitInfo.length <= 0) {
+                throw new Error('Invalid Unit ID or No Lot')
+            }
+
+            if (auctionUnitInfo[0].Online != 'tender') {
+                throw new Error('Invalid Auction Type')
+            }
+
+            const priceLimit = auctionUnitInfo[0].HargaLimit
+            const auctionDate = auctionUnitInfo[0].TglAuctions
+            const auctionEndTime = auctionUnitInfo[0].EndTime
+
+            const date1 = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
+            const date3 = dateformat(auctionDate + ' ' + auctionEndTime, 'yyyy-mm-dd HH:MM:ss')
+            const dateAuction = new Date(date1)
+            const endAuction = new Date(date3)
+            const diffClose = new datediff(endAuction, dateAuction)
+            
+            if (diffClose.seconds() <= 0) {
+                throw new Error('Auction sudah di tutup')
+            }
+
+            const maxBid = await rBid.maxBid(params.auction_id, params.unit_id, params.no_lot)
+            let maxPrice = priceLimit
+            if (maxBid != null && maxBid.length > 0) {
+                maxPrice = maxBid[0].Nominal
+            }
+
+            const validBid = (bidPrice - maxPrice) % config.limit_bid[type]
+            if (validBid != 0) {
+                throw new Error('Nominal Bid Harus Kelipatan ' + config.limit_bid[type].toString())
+            }
+
+            const checkUpsert = await this.model.getOne({
+                'IdAuctions': params.auction_id,
+                'NoLOT': params.no_lot,
+                'IdUnit': params.unit_id,
+                'UserID': token.userid
+            })
+
+            if (checkUpsert != null && checkUpsert.length > 0) {
+                await this.model.where({
+                    'IdAuctions =': params.auction_id,
+                    'NoLOT =': params.no_lot,
+                    'IdUnit =': params.unit_id,
+                    'UserID =': token.userid
+                })
+                .updateWhere({
+                    'Nominal': bidPrice,
+                    'BidTime': date1
+                })
+            }
+            else {
+                const nplCount = await rNpl.getRemaining(token.userid, params.auction_id)
+                const nplRemaining = await rBid.getRemaining(token.userid, params.auction_id)
+
+                if(nplRemaining.length < nplCount.length) {
+                    await this.model.insert({
+                        'IdAuctions': params.auction_id, 
+                        'NoLOT': params.no_lot, 
+                        'Nominal': params.bid_price, 
+                        'BidTime': date1, 
+                        'UserID': token.userid, 
+                        'IdUnit': params.unit_id, 
+                        'Online': 'tender', 
+                        'statusbidx': 'berjalan',
+                        'Operator': 0,
+                        'nplx': params.npl
+                    })
+                }
+                else {
+                    throw new Error('Error! NPL anda sudah habis')
+                }
+            }
+
+            return res.send(this.response(true, params, null))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async liveBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            params.bid_price = 0
+            const rules = {
+                npl: 'required',
+                auction_id: 'required',
+                unit_id: 'required',
+                type: 'required',
+                no_lot: 'required'
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const type = params.type
+            const rNpl = new nplRepo()
+            const rAuctionDetail = new auctionDetailRepo()
+            const rBid = new bidRepo()
+            
+            const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
+            if (validNPL == null || validNPL.length <= 0) {
+                throw new Error('Invalid NPL Number')
+            }
+            
+            const auctionUnitInfo = await rAuctionDetail.auctionInfo(params.auction_id, params.unit_id, params.no_lot)
+            if (auctionUnitInfo == null || auctionUnitInfo.length <= 0) {
+                throw new Error('Invalid Unit ID or No Lot')
+            }
+
+            if (auctionUnitInfo[0].Online == 'tender') {
+                throw new Error('Invalid Auction Type')
+            }
+
+            const priceLimit = auctionUnitInfo[0].HargaLimit
+            const auctionDate = auctionUnitInfo[0].TglAuctions
+            const auctionEndTime = auctionUnitInfo[0].EndTime
+            const online = auctionUnitInfo[0].Online
+
+            const date1 = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
+            const date3 = dateformat(auctionDate + ' ' + auctionEndTime, 'yyyy-mm-dd HH:MM:ss')
+            const dateAuction = new Date(date1)
+            const endAuction = new Date(date3)
+            const diffClose = new datediff(endAuction, dateAuction)
+            
+            if (diffClose.seconds() <= 0) {
+                throw new Error('Auction sudah di tutup')
+            }
+
+            const maxBid = await rBid.maxBid(params.auction_id, params.unit_id, params.no_lot)
+            let maxPrice = priceLimit
+            let firstBid = true
+            if (maxBid != null && maxBid.length > 0) {
+                if (maxBid[0].UserID == token.userid) {
+                    throw new Error('Nominal Bid Anda masih yang tertinggi')
+                }
+                maxPrice = maxBid[0].Nominal
+                firstBid = false
+            }
+
+            const bidPrice = firstBid ? priceLimit : maxPrice + config.limit_bid[type]
+            
+            const checkUpsert = await this.model.getOne({
+                'IdAuctions': params.auction_id,
+                'NoLOT': params.no_lot,
+                'IdUnit': params.unit_id,
+                'UserID': token.userid
+            })
+
+            if (checkUpsert != null && checkUpsert.length > 0) {
+                await this.model.where({
+                    'IdAuctions =': params.auction_id,
+                    'NoLOT =': params.no_lot,
+                    'IdUnit =': params.unit_id,
+                    'UserID =': token.userid
+                })
+                .updateWhere({
+                    'Nominal': bidPrice,
+                    'BidTime': date1
+                })
+            }
+            else {
+                const nplCount = await rNpl.getRemaining(token.userid, params.auction_id)
+                const nplRemaining = await rBid.getRemaining(token.userid, params.auction_id)
+
+                if(nplRemaining.length < nplCount.length) {
+                    await this.model.insert({
+                        'IdAuctions': params.auction_id, 
+                        'NoLOT': params.no_lot, 
+                        'Nominal': bidPrice, 
+                        'BidTime': date1, 
+                        'UserID': token.userid, 
+                        'IdUnit': params.unit_id, 
+                        'Online': online, 
+                        'statusbidx': 'berjalan',
+                        'Operator': 0,
+                        'nplx': ''
+                    })
+                    params.bid_price = bidPrice
+                }
+                else {
+                    throw new Error('Error! NPL anda sudah habis')
+                }
+            }
+
+            return res.send(this.response(true, params, null))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        } 
+    }
+
+    async lastBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const getLast = await rBid.getLastBid(params.auction_id, params.unit_id)
+            if (getLast) {
+                return res.send(this.response(true, getLast, null))
+            }
+
+            return res.send(this.response(false, null, 'Can not get Last bid'))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
+    
+    async lastUserBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const getLast = await rBid.getLastUserBid(params.auction_id, params.unit_id, token.userid)
+            if (getLast) {
+                return res.send(this.response(true, getLast, null))
+            }
+
+            return res.send(this.response(false, null, 'Can not get Last bid'))            
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
+    
+    async cancelBid(req, res) {
+        try{
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.create')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+
+            var params = req.body
+            const rules = {
+                auction_id: 'required',
+                unit_id: 'required',
+                no_lot: 'required',
+            }
+            const validation = new Validation();
+            let validate = validation.check(params, rules)
+            
+            if (validate.length > 0) {
+                throw new Error(validate)
+            }
+
+            const rBid = new bidRepo()
+            const rAuctionDetail = new auctionDetailRepo()
+            const getUnit = await rAuctionDetail.auctionDetail.getOne({
+                IdAuctions: params.auction_id,
+                IdUnit: params.unit_id,
+                NoLot: params.no_lot,
+            })
+            if (getUnit.length > 0) {
+                const status = getUnit[0]['Status']
+                if (status != '2') {
+                    const del = await this.model.where({
+                        'IdAuctions =': params.auction_id,
+                        'IdUnit =': params.unit_id,
+                        'NoLOT =': params.no_lot,
+                        'UserID =': token.userid
+                    }).remove()
+                    
+                    return res.send(this.response(del, params, del ? 'Deleting Unit is success' : 'Deleting Unit is failed'))
+                }
+                else {
+                    return res.send(this.response(false, null, 'Unit Has Been Sold'))
+                }
+            }
+
+            return res.send(this.response(false, null, 'Can not delete bid'))     
+        }
+        catch(err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
+    
+    // async sendToMobile(req) {
+    //     const file = path.resolve('app/last_live.txt')
+    //     const initFile = path.resolve('app/init_live.txt')
+        
+    //     const { auctionId, unitId, price, panggilan, isNew, close, npl } = req
+    //     const fread = readFileSync(file);
+    //     const k = auctionId.replace('-','') + unitId;
+    //     const content = [];
+    //     $unit = getDetail($auctionId, $unitId);
+    //     $data = count($unit) > 0 ? $unit[0] : [];
+    //     $galleries = getGallery($unitId);
+    //     $dataGallery = count($galleries) > 0 ? $galleries : [];
+    //     $price = number_format($price, 0, ",", ".");
+    //     if (count($data) > 0) {
+    //         $data['HargaLimit'] = number_format($data['HargaLimit'], 0, ",",".");
+    //     }
+    //     if ($fread == '') {
+            
+    //         $content[$auctionId][$k] = [
+    //             'auction_id'=>$auctionId,
+    //             'unit_id'=>$unitId,
+    //             'price'=>$price,
+    //             'panggilan'=>$panggilan,
+    //             'new'=>$isNew,
+    //             'unit'=> $data,
+    //             'user_id'=> $userId,
+    //             'close' => $close,
+    //             'npl' => $npl,
+    //             'galleries'=>$dataGallery
+    //         ];
+    //     }
+    //     else {
+    //         if (!$init) {
+    //             $content = json_decode($fread, true);
+    //         }
+    //         if (isset($content[$auctionId])) {
+    //             unset($content[$auctionId]);
+    //         }
+    //         $content[$auctionId][$k] = [
+    //             'auction_id'=>$auctionId,
+    //             'unit_id'=>$unitId,
+    //             'price'=>$price,
+    //             'panggilan'=>$panggilan,
+    //             'new'=>$isNew,
+    //             'unit'=>$data,
+    //             'user_id'=> $userId,
+    //             'close' => $close,
+    //             'npl' => '',
+    //             'galleries'=>$dataGallery
+    //         ];
+    //     }
+    //     file_put_contents($filePath, json_encode($content));
+    //     if ($init) {
+    //         $freadInit = file_get_contents($fileInitPath);
+    //         $contentInit = json_decode($freadInit, true);
+    //         $result = array_merge($contentInit, $content);
+    //         file_put_contents($fileInitPath, json_encode($result));
+    //     }
+    // }
+}
+
+module.exports = Bid

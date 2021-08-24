@@ -1,36 +1,69 @@
 'use strict'
 const path = require('path')
+const config = require(path.resolve('config/config'))
+const table = require(path.resolve('config/database')).tables
 const conn = require(path.resolve('config/database'))
 
-class User {
+const Model = require(config.model_path + '/Model')
+
+class User extends Model {
     constructor() {
-        this.tablename = 'users'
+        super()
+        this.tablename = table.user
+        this.primaryKey = 'UserID'
     }
-    async getAll(filter) {
-        const db = await conn.db()
-        let [rows, fields] = await db.execute("select * from "+this.tablename)
-        return rows
+
+    defaultFields() {
+        const defaultFields = {
+            Username:'',
+            Nama: '',
+            Email: '',
+            NoTelp: '',
+            NoKTP: '',
+            Alamat: '',
+            Password: '',
+            NoNPWP:'',
+            TempatLahir:'',
+            TglLahir:'1970-01-01',
+            Bank:'',
+            Cabang:'',
+            NoRek:'',
+            AtasNama :'',
+            PICConsignor:'',
+            PICOtobid:'',
+            Ketmob:'',
+            Ketpar:'',
+            TipeKomisi:'',
+            Komisi:'',
+            StartMOU:'1970-01-01',
+            EndMOU:'1970-01-01',
+            TypeMOU:'',
+            NoPKS:'',
+            StartPKS:'1970-01-01',
+            EndPKS:'1970-01-01',
+            Foto:'',
+            FKTP:'',
+            FNPWP:'',
+            FTDP:'',
+            FSPK:'',
+            FSKPL:'',
+            Kode_consignor:'',
+            Last_update: '1970-01-01',
+            FSIUP:'',
+            FAKTE:'',
+            FDOMISILI:''
+        }
+        return defaultFields
     }
 
     async getId(id) {
-        const db = await conn.db()
-        let [rows, fields] = await db.execute("select * from "+this.tablename+" where id=?",[id])
-        return rows
-    }
-
-    async get(params) {
-        const q = "select * from "+this.tablename
-        let condition = ""
-        let filter = []
-        for (let key in params) {
-            condition = condition + key + '=? AND '
-            filter.push(params[key])
-        }
-        if (condition !== '') {
-            condition = " where " + condition.substr(0, (condition.length - 4))
-        }
-        const db = await conn.db()
-        let [rows, fields] = await db.execute(q + condition, filter)
+        const db = await this.connect()
+        let sql = "select *, "
+            sql = sql + "IF(FKTP IS NOT NULL, CONCAT('" + config.images.user + "', FKTP) , '') AS image_ktp, "
+            sql = sql + "IF(FNPWP IS NOT NULL, CONCAT('" + config.images.user + "', FNPWP) , '') AS image_npwp "
+            sql = sql + "from "+this.tablename
+            sql = sql + " where "+ this.primaryKey+ "=?"
+        let [rows, fields] = await db.execute(sql,[id])
         return rows
     }
 }

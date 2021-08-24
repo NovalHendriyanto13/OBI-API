@@ -1,15 +1,14 @@
 'use strict'
 const path = require('path')
-const table = require(path.resolve('config/database')).tables
 const config = require(path.resolve('config/config'))
+const table = require(path.resolve('config/database')).tables
 const Model = require(config.model_path + '/Model')
 
-class Unit extends Model{
+class UnitImage extends Model {
     constructor() {
         super()
-        this.tablename = table.unit
-        this.primaryKey = 'IdUnit'
+        this.tablename = table.unit_image
     }
 }
 
-module.exports = Unit
+module.exports = UnitImage

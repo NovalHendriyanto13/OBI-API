@@ -1,46 +1,50 @@
 'use strict'
-const { resolve } = require('path')
 const path = require('path')
+const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
+const variable = require(path.resolve('app/utils/variable'))
 const redis = require(path.resolve('config/redis'))
 
-class Controller {
+const Controller = require(config.controller_path + '/Controller')
+const brandModel = require(config.model_path + '/m_brand')
+const brandRepo = require(config.repo_path + '/brand_repo')
 
+class Brand extends Controller {
     constructor() {
-        this.redis = false
+        super()
+        this.setModel(new brandModel())
+        this.redis= true
         this.redisKey= {
-            index: '',
-            detail: ''
+            index: variable.redisKey.BRAND,
+            detail: variable.redisKey.BRAND_TYPE,
+            type_list: variable.redisKey.BRAND_TYPE_LIST
         }
     }
 
     async index(req, res) {
-        try{
+        try {
             const token = util.authenticate(req, res)
             const model = this.getModel()
             const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
-
+            
+            const r = new brandRepo()
             let m
-            let params = req.body
+
             if (this.redis !== false) {
                 const client = redis.redisClient()
-
+                
                 client.get(this.redisKey.index, async (err, cache) => {
                     if (err) throw err
                     if (cache !== null) {
-                        const cacheData = JSON.parse(cache);
+                        const cacheData = JSON.parse(cache)
                         return res.send(this.response(true, cacheData, null))
                     }
                     else {
-                        if (params !== null) {
-                            m = await model.get(params)
-                        }
-                        else {
-                            m = await model.getAll()
-                        }
+                        m = await r.getAllBrand()
+
                         await util.redisSet(this.redisKey.index, m)
 
                         return res.send(this.response(true, m, null))
@@ -48,55 +52,7 @@ class Controller {
                 })
             }
             else {
-                if (params !== null) {
-                    m = await model.get(params)
-                }
-                else {
-                    m = await model.getAll()
-                }
-                return res.send(this.response(true, m, null))
-            }
-        }
-        catch(err) {
-            console.log(err)
-            return res.send(this.response(false, null, {
-                code: err.code,
-                message: err.message
-            }))
-        } 
-    }
-
-    async detail(req, res) {
-        try {
-            const token = util.authenticate(req, res)
-            const model = this.getModel()
-            const access = await util.permission(token, model.tablename + '.detail')
-            if (access === false) {
-                return res.send(this.response(false, null, 'You are not authorized!'))
-            }
-            
-            let params = req.params
-            let id = params.id
-            let m 
-            
-            if (this.redis !== false) {
-                const client = redis.redisClient()
-                client.get(this.redisKey.detail + id, async (err, cache) => {
-                    if (err) throw err
-                    if (cache !== null) {
-                        const cacheData = JSON.parse(cache)
-                        return res.send(this.response(true, cacheData, null))
-                    }
-                    else {
-                        m = await model.getId(id)
-                        await util.redisSet(this.redisKey.detail + id, m)
-                        return res.send(this.response(true, m, null))
-                    }
-                })
-            }
-            else {
-                m = await model.getId(id)
-            
+                m = await r.getAllBrand()
                 return res.send(this.response(true, m, null))
             }
         }
@@ -109,53 +65,98 @@ class Controller {
         }
     }
 
-    async update(req, res) {
-        try{
+    async detail(req, res) {
+        try {
             const token = util.authenticate(req, res)
             const model = this.getModel()
-            const access = await util.permission(token, model.tablename + '.update')
+            const access = await util.permission(token, model.tablename + '.index')
             if (access === false) {
                 return res.send(this.response(false, null, 'You are not authorized!'))
             }
+            
+            const params = req.params
+            const id = params.id
 
-            var params = req.body
-            var id = req.params.id
+            const r = new brandRepo()
+            let m
 
-            if (params === null || id === null) {
-                throw new Error('Parameters is Required')
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                
+                client.get(this.redisKey.detail + id, async (err, cache) => {
+                    if (err) throw err
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await r.getTypeByMerk(id)
+
+                        await util.redisSet(this.redisKey.detail + id, m)
+
+                        return res.send(this.response(true, m, null))
+                    }
+                })
             }
-
-            return res.send(this.response(true, 'Update Module is ready',null))
+            else {
+                m = await r.getTypeByMerk(id)
+                return res.send(this.response(true, m, null))
+            }
         }
-        catch(err) {
+        catch (err) {
             console.log(err)
             return res.send(this.response(false, null, {
                 code: err.code,
                 message: err.message
             }))
-        } 
-    }
-
-    async create(req, res) {
-        return res.send(this.response(false, null, 'Create Module'))
-    }
-
-    response(status, data, message) {
-        return {
-            status: status,
-            data: data,
-            message: message
         }
     }
 
-    setModel(model) {
-        this.model = model
-    }
+    async type(req, res) {
+        try {
+            const token = util.authenticate(req, res)
+            const model = this.getModel()
+            const access = await util.permission(token, model.tablename + '.index')
+            if (access === false) {
+                return res.send(this.response(false, null, 'You are not authorized!'))
+            }
+            
+            const params = req.params
+            let m
 
-    getModel() {
-        return this.model
-    }
+            const r = new brandRepo()
 
+            if (this.redis !== false) {
+                const client = redis.redisClient()
+                
+                client.get(this.redisKey.type_list, async (err, cache) => {
+                    if (err) throw err
+                    if (cache !== null) {
+                        const cacheData = JSON.parse(cache)
+                        return res.send(this.response(true, cacheData, null))
+                    }
+                    else {
+                        m = await r.getType()
+
+                        await util.redisSet(this.redisKey.type_list, m)
+
+                        return res.send(this.response(true, m, null))
+                    }
+                })
+            }
+            else {
+                m = await r.getType()
+                return res.send(this.response(true, m, null))
+            }
+        }
+        catch (err) {
+            console.log(err)
+            return res.send(this.response(false, null, {
+                code: err.code,
+                message: err.message
+            }))
+        }
+    }
 }
 
-module.exports = Controller
+module.exports = Brand
