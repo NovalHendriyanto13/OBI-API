@@ -440,6 +440,7 @@ class Bid extends Controller {
             }))
         }
     }
+<<<<<<< HEAD
     
     // async sendToMobile(req) {
     //     const file = path.resolve('app/last_live.txt')
@@ -500,6 +501,8 @@ class Bid extends Controller {
     //         file_put_contents($fileInitPath, json_encode($result));
     //     }
     // }
+=======
+>>>>>>> origin/old-version
 }
 
 module.exports = Bid

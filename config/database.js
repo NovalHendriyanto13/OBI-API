@@ -12,3 +12,16 @@ module.exports.db = async() => {
         port: config.db.port
     })
 }
+
+module.exports.tables = {
+    user : 'ms_user',
+    auction : 'ms_auctions',
+    auction_detail : 'ms_auctions_unit',
+    unit : 'ms_unit',
+    area : 'ms_wilayah',
+    npl : 'ms_npl',
+    brand : 'ms_merk',
+    unit_image : 'tr_unit_image',
+    unit_document : 'tr_unit_dokumen',
+    bid: 'ms_bid'
+}
