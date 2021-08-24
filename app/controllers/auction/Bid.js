@@ -440,69 +440,6 @@ class Bid extends Controller {
             }))
         }
     }
-<<<<<<< HEAD
-    
-    // async sendToMobile(req) {
-    //     const file = path.resolve('app/last_live.txt')
-    //     const initFile = path.resolve('app/init_live.txt')
-        
-    //     const { auctionId, unitId, price, panggilan, isNew, close, npl } = req
-    //     const fread = readFileSync(file);
-    //     const k = auctionId.replace('-','') + unitId;
-    //     const content = [];
-    //     $unit = getDetail($auctionId, $unitId);
-    //     $data = count($unit) > 0 ? $unit[0] : [];
-    //     $galleries = getGallery($unitId);
-    //     $dataGallery = count($galleries) > 0 ? $galleries : [];
-    //     $price = number_format($price, 0, ",", ".");
-    //     if (count($data) > 0) {
-    //         $data['HargaLimit'] = number_format($data['HargaLimit'], 0, ",",".");
-    //     }
-    //     if ($fread == '') {
-            
-    //         $content[$auctionId][$k] = [
-    //             'auction_id'=>$auctionId,
-    //             'unit_id'=>$unitId,
-    //             'price'=>$price,
-    //             'panggilan'=>$panggilan,
-    //             'new'=>$isNew,
-    //             'unit'=> $data,
-    //             'user_id'=> $userId,
-    //             'close' => $close,
-    //             'npl' => $npl,
-    //             'galleries'=>$dataGallery
-    //         ];
-    //     }
-    //     else {
-    //         if (!$init) {
-    //             $content = json_decode($fread, true);
-    //         }
-    //         if (isset($content[$auctionId])) {
-    //             unset($content[$auctionId]);
-    //         }
-    //         $content[$auctionId][$k] = [
-    //             'auction_id'=>$auctionId,
-    //             'unit_id'=>$unitId,
-    //             'price'=>$price,
-    //             'panggilan'=>$panggilan,
-    //             'new'=>$isNew,
-    //             'unit'=>$data,
-    //             'user_id'=> $userId,
-    //             'close' => $close,
-    //             'npl' => '',
-    //             'galleries'=>$dataGallery
-    //         ];
-    //     }
-    //     file_put_contents($filePath, json_encode($content));
-    //     if ($init) {
-    //         $freadInit = file_get_contents($fileInitPath);
-    //         $contentInit = json_decode($freadInit, true);
-    //         $result = array_merge($contentInit, $content);
-    //         file_put_contents($fileInitPath, json_encode($result));
-    //     }
-    // }
-=======
->>>>>>> origin/old-version
 }
 
 module.exports = Bid
