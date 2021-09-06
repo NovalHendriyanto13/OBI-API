@@ -2,9 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const config = require(path.resolve('config/config'))
 
-const bidModel = require(config.model_path + '/m_bid')
 const bidRepo = require(config.repo_path + '/bid_repo')
-const auctionRepo = require(config.repo_path + '/auction_repo')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
 
 module.exports = function(io) {

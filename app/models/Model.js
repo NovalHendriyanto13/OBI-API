@@ -60,7 +60,6 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-
         const db = await this.connect()
         let [rows, fields] = await db.execute(q + condition, filter)
         return rows
@@ -90,7 +89,6 @@ class Model {
         if (order != '') {
             condition = condition + " order by " + order
         }
-
         const db = await this.connect()
         let [rows, fields] = await db.execute(q + condition + ' LIMIT 1', filter)
         return rows

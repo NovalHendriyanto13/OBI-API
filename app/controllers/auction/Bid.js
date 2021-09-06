@@ -6,6 +6,7 @@ const datediff = require('date-diff')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const helper = require(path.resolve('app/utils/helper'))
+const table = require(path.resolve('config/database')).tables
 
 const Controller = require(config.controller_path + '/Controller')
 const Validation = require(path.resolve('app/library/Validation'))
@@ -13,6 +14,7 @@ const bidModel = require(config.model_path + '/m_bid')
 const bidRepo = require(config.repo_path + '/bid_repo')
 const nplRepo = require(config.repo_path + '/npl_repo')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
+const unitImageRepo = require(config.repo_path + '/unit_image_repo')
 
 class Bid extends Controller {
     constructor() {
@@ -253,6 +255,19 @@ class Bid extends Controller {
             }
 
             const bidPrice = firstBid ? priceLimit : maxPrice + config.limit_bid[type]
+
+            const reqToMobile = {
+                auctionId: params.auction_id,
+                unitId: params.unit_id,
+                price: bidPrice,
+                panggilan: 0,
+                isNew: 0,
+                close: false,
+                npl: params.npl,
+                userId: token.userid
+            }
+
+            this.sendToMobile(reqToMobile)
             
             const checkUpsert = await this.model.getOne({
                 'IdAuctions': params.auction_id,
@@ -439,6 +454,76 @@ class Bid extends Controller {
                 message: err.message
             }))
         }
+    }
+
+    async sendToMobile(req) {
+        const file = path.resolve('app/last_live.txt')
+        const initFile = path.resolve('app/init_live.txt')
+        
+        const { auctionId, unitId, price, panggilan, isNew, close, npl, userId } = req
+        const fread = fs.readFileSync(file);
+        const k = auctionId.replace('-','') + unitId
+        const content = {};
+
+        const rAuctionDetail = new auctionDetailRepo()
+        const rUnitImage = new unitImageRepo()
+        const paramsUnit = []
+        paramsUnit[table.auction + '.IdAuctions ='] = auctionId
+        paramsUnit[table.auction_detail + '.IdUnit ='] = unitId
+        const unit = await rAuctionDetail.getAuctionUnit(paramsUnit)
+        const galleries = await rUnitImage.getList(unitId)
+
+        const priceFormated = price.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'IDR'
+        })
+        let unitInfo = []
+        if (unit.length > 0) {
+            const limitPrice = unit[0]['HargaLimit']
+            unit[0]['HargaLimit'] = limitPrice.toLocaleString('en-US', {
+                style: 'currency',
+                currency: 'IDR'
+            })
+            unitInfo = unit[0]
+        }
+        if (fread == '') {
+            content[auctionId] = []
+            content[auctionId][k] = {
+                auction_id: auctionId,
+                unit_id: unitId,
+                price: priceFormated,
+                panggilan,
+                new: isNew,
+                unit: unitInfo,
+                user_id: userId,
+                close,
+                npl,
+                galleries: galleries
+            };
+        }
+        else {
+            if (typeof content[auctionId] !== 'undefined') {
+                delete content[auctionId];
+            }
+            content[auctionId] = {}
+            content[auctionId][k] = {
+                auction_id: auctionId,
+                unit_id: unitId,
+                price: priceFormated,
+                panggilan,
+                new: isNew,
+                unit: unitInfo,
+                user_id: userId,
+                close,
+                npl,
+                galleries
+            };
+        }
+        const jsonString = JSON.stringify(content)
+        fs.writeFileSync(file, jsonString)
+        
+        const jsonInitString = JSON.stringify(content)
+        fs.writeFileSync(initFile, jsonInitString)
     }
 }
 
