@@ -256,19 +256,6 @@ class Bid extends Controller {
 
             const bidPrice = firstBid ? priceLimit : maxPrice + config.limit_bid[type]
 
-            const reqToMobile = {
-                auctionId: params.auction_id,
-                unitId: params.unit_id,
-                price: bidPrice,
-                panggilan: 0,
-                isNew: 0,
-                close: false,
-                npl: params.npl,
-                userId: token.userid
-            }
-
-            this.sendToMobile(reqToMobile)
-            
             const checkUpsert = await this.model.getOne({
                 'IdAuctions': params.auction_id,
                 'NoLOT': params.no_lot,
@@ -311,6 +298,19 @@ class Bid extends Controller {
                     throw new Error('Error! NPL anda sudah habis')
                 }
             }
+
+            const reqToMobile = {
+                auctionId: params.auction_id,
+                unitId: params.unit_id,
+                price: bidPrice,
+                panggilan: 0,
+                isNew: 0,
+                close: false,
+                npl: params.npl,
+                userId: token.userid
+            }
+
+            this.sendToMobile(reqToMobile)
 
             return res.send(this.response(true, params, null))            
         }
@@ -473,17 +473,12 @@ class Bid extends Controller {
         const unit = await rAuctionDetail.getAuctionUnit(paramsUnit)
         const galleries = await rUnitImage.getList(unitId)
 
-        const priceFormated = price.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'IDR'
-        })
+        const priceFormated = helper.currencyFormat(price)
+
         let unitInfo = []
         if (unit.length > 0) {
             const limitPrice = unit[0]['HargaLimit']
-            unit[0]['HargaLimit'] = limitPrice.toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'IDR'
-            })
+            unit[0]['HargaLimit'] = helper.currencyFormat(limitPrice)
             unitInfo = unit[0]
         }
         if (fread == '') {

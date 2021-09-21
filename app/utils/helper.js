@@ -55,10 +55,23 @@ let randomInt = function(end, start=0) {
   return Math.floor(Math.random() * end) + start
 }
 
+let currencyFormat = function(i) {
+  const currency = i.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'IDR'
+  })
+  let formatted = currency.replace(/IDR/g,'').replace(/,/g,'.')
+  const { length } = formatted
+
+  formatted = formatted.substring(0,(length - 3))
+  return formatted
+}
+
 module.exports = {
   dateNow,
   timeNow,
   convertDate,
   convertTime,
-  randomInt
+  randomInt,
+  currencyFormat,
 }
