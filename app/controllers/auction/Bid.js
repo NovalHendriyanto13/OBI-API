@@ -11,6 +11,7 @@ const table = require(path.resolve('config/database')).tables
 const Controller = require(config.controller_path + '/Controller')
 const Validation = require(path.resolve('app/library/Validation'))
 const bidModel = require(config.model_path + '/m_bid')
+const auctionDetailModel = require(config.model_path + '/m_auction_detail')
 const bidRepo = require(config.repo_path + '/bid_repo')
 const nplRepo = require(config.repo_path + '/npl_repo')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
@@ -223,15 +224,25 @@ class Bid extends Controller {
             if (auctionUnitInfo == null || auctionUnitInfo.length <= 0) {
                 throw new Error('Invalid Unit ID or No Lot')
             }
-
+            
             if (auctionUnitInfo[0].Online == 'tender') {
                 throw new Error('Invalid Auction Type')
             }
-
+            
+            const close = auctionUnitInfo[0].Open
             const priceLimit = auctionUnitInfo[0].HargaLimit
             const auctionDate = auctionUnitInfo[0].TglAuctions
             const auctionEndTime = auctionUnitInfo[0].EndTime
             const online = auctionUnitInfo[0].Online
+            const panggilan = auctionUnitInfo[0].Panggilan
+            
+            if (close == 2) {
+                throw new Error('Unit sudah di tutup')
+            }
+            
+            if (panggilan >= 2) {
+                throw new Error('Anda sudah tidak bisa melakukan BID')
+            }
 
             const date1 = dateformat(helper.dateNow() + ' ' + helper.timeNow(), 'yyyy-mm-dd HH:MM:ss') 
             const date3 = dateformat(auctionDate + ' ' + auctionEndTime, 'yyyy-mm-dd HH:MM:ss')
@@ -298,6 +309,18 @@ class Bid extends Controller {
                     throw new Error('Error! NPL anda sudah habis')
                 }
             }
+            
+            // update to auction unit
+            const mAuctionDetail = new auctionDetailModel()
+            await mAuctionDetail.where({
+                'IdAuctions =': params.auction_id,
+                'NoLOT =': params.no_lot,
+                'IdUnit =': params.unit_id
+            })
+            .updateWhere({
+                'Panggilan': 0,
+                'Close': 1
+            })
 
             const reqToMobile = {
                 auctionId: params.auction_id,

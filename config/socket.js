@@ -93,6 +93,8 @@ module.exports = function(io) {
                             panggilan: nextUnit.panggilan,
                             is_new: nextUnit.new,
                             unit: nextUnit.unit,
+                            user_id: nextUnit.user_id,
+                            close: nextUnit.close,
                             galleries: nextUnit.galleries
                         })
                         
@@ -108,6 +110,8 @@ module.exports = function(io) {
                         panggilan: current.panggilan,
                         is_new: current.new,
                         unit: current.unit,
+                        user_id: current.user_id,
+                        close: current.close,
                         galleries: current.galleries
                     })
                     initContent = json[auction_id]
@@ -149,6 +153,8 @@ module.exports = function(io) {
                             panggilan: nextUnit.panggilan,
                             is_new: nextUnit.new,
                             unit: nextUnit.unit,
+                            user_id: nextUnit.user_id,
+                            close: nextUnit.close,
                             galleries: nextUnit.galleries
                         })
                     }
@@ -161,6 +167,8 @@ module.exports = function(io) {
                         panggilan: current.panggilan,
                         is_new: current.new,
                         unit: current.unit,
+                        user_id: current.user_id,
+                        close: current.close,
                         galleries: current.galleries
                     })
                 }

@@ -130,6 +130,7 @@ class AuctionDetailRepo {
       table.auction + '.Online,' +
       table.auction_detail + '.NoLot,' +
       table.auction_detail + '.Open,' +
+      table.auction_detail + '.Panggilan,' +
       table.unit + '.HargaLimit,' +
       table.unit + '.IdUnit, ' +
       table.unit + '.Jenis,' +
