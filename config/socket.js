@@ -2,9 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const config = require(path.resolve('config/config'))
 
-const bidModel = require(config.model_path + '/m_bid')
 const bidRepo = require(config.repo_path + '/bid_repo')
-const auctionRepo = require(config.repo_path + '/auction_repo')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
 
 module.exports = function(io) {
@@ -95,6 +93,8 @@ module.exports = function(io) {
                             panggilan: nextUnit.panggilan,
                             is_new: nextUnit.new,
                             unit: nextUnit.unit,
+                            user_id: nextUnit.user_id,
+                            close: nextUnit.close,
                             galleries: nextUnit.galleries
                         })
                         
@@ -110,6 +110,8 @@ module.exports = function(io) {
                         panggilan: current.panggilan,
                         is_new: current.new,
                         unit: current.unit,
+                        user_id: current.user_id,
+                        close: current.close,
                         galleries: current.galleries
                     })
                     initContent = json[auction_id]
@@ -151,6 +153,8 @@ module.exports = function(io) {
                             panggilan: nextUnit.panggilan,
                             is_new: nextUnit.new,
                             unit: nextUnit.unit,
+                            user_id: nextUnit.user_id,
+                            close: nextUnit.close,
                             galleries: nextUnit.galleries
                         })
                     }
@@ -163,6 +167,8 @@ module.exports = function(io) {
                         panggilan: current.panggilan,
                         is_new: current.new,
                         unit: current.unit,
+                        user_id: current.user_id,
+                        close: current.close,
                         galleries: current.galleries
                     })
                 }

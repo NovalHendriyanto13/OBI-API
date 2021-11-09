@@ -1,16 +1,13 @@
 const express = require('express')
 const config = require('./config/config')
 const app = express()
-const cors = require('cors')
 const fs = require('fs')
 const port = config.port
-const portHttps = 3443
 const bodyParser = require('body-parser')
 var http = require('http').Server(app)
 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
-
 var io = require('socket.io')(http,{
 	cors: {
 		origin: "*",

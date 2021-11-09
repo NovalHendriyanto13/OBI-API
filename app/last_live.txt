@@ -1,1 +1,5 @@
+<<<<<<< HEAD
+{}
+=======
 {"TRL-001":{"TRL001190511012817":{"auction_id":"TRL-001","unit_id":"190511012817","price":"115.000.000","panggilan":"2","new":0,"unit":{"IdAuctions":"TRL-001","Online":"floor","NoLot":"002","HargaLimit":"115.000.000","IdUnit":"190511012817","NoPolisi":"B 776 BIB","Merk":"honda","Tipe":"jazz 1.5 e","Tahun":"2011","Transmisi":"M\/T","Warna":"Abu-abu Metalik","Jenis":"mobil","GradeMesin":"E","GradeInterior":"E","GradeExterior":"E","TglBerlakuSTNK":null,"TglBerlakuPajak":null,"image":"https:\/\/otobid.co.id\/img\/unit\/190511012817-210722191110-0.jpg"},"user_id":null,"close":false,"galleries":[{"image":"https:\/\/otobid.co.id\/img\/unit\/190511012817-210722191110-0.jpg"},{"image":"https:\/\/otobid.co.id\/img\/unit\/190511012817-210722191240-0.jpg"}]}}}
+>>>>>>> origin/old-version

@@ -8,6 +8,7 @@ module.exports = function(app, config) {
     const npl = require(config.controller_path + '/auction/Npl')
     const brand = require(config.controller_path + '/masters/Brand')
     const bid = require(config.controller_path + '/auction/Bid')
+    const general = require(config.controller_path + '/masters/General')
 
     const routes = {
         user : new user(),
@@ -120,5 +121,10 @@ module.exports = function(app, config) {
     app.get('/live-auction-unit/:id', (req, res)=> {
         let controller = new auctionDetail()
         controller.getLastLive(req, res)
-    })   
+    })
+
+    app.get('/general/server-time', (req, res)=> {
+        let controller = new general()
+        controller.getServerTime(req, res)
+    })
 }
