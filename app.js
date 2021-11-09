@@ -2,8 +2,7 @@ const express = require('express')
 const config = require('./config/config')
 const app = express()
 const fs = require('fs')
-const port = 3000
-const portHttps = 3443
+const port = config.port
 const bodyParser = require('body-parser')
 var http = require('http').Server(app)
 
