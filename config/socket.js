@@ -12,7 +12,7 @@ module.exports = function(io) {
         console.log('connect to socket')
         client.on('sendBid', function(data) {
             console.log(data)
-            client.broadcast.emit('getBid', data)
+            io.emit('getBid', data)
         })
 
         client.on('sendCall', function(data) {
@@ -38,10 +38,6 @@ module.exports = function(io) {
             client.broadcast.emit('getNewAuction', data)
         })
 
-        client.on('tes', function(data) {
-            console.log(data)
-        });
-        
         client.on('setLastPrice', async function(data) {
             const params = data
             
@@ -95,6 +91,7 @@ module.exports = function(io) {
                             unit: nextUnit.unit,
                             user_id: nextUnit.user_id,
                             close: nextUnit.close,
+                            npl: nextUnit.npl,
                             galleries: nextUnit.galleries
                         })
                         
@@ -112,6 +109,7 @@ module.exports = function(io) {
                         unit: current.unit,
                         user_id: current.user_id,
                         close: current.close,
+                        npl: current.npl,
                         galleries: current.galleries
                     })
                     initContent = json[auction_id]
@@ -155,6 +153,7 @@ module.exports = function(io) {
                             unit: nextUnit.unit,
                             user_id: nextUnit.user_id,
                             close: nextUnit.close,
+                            npl: nextUnit.npl,
                             galleries: nextUnit.galleries
                         })
                     }
@@ -169,6 +168,7 @@ module.exports = function(io) {
                         unit: current.unit,
                         user_id: current.user_id,
                         close: current.close,
+                        npl: current.npl,
                         galleries: current.galleries
                     })
                 }

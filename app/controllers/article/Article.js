@@ -94,6 +94,9 @@ class Article extends Controller {
             html = html + '<li>Peserta Lelang setuju bahwa usaha untuk memanipulasi data, mengacaukan sistem elektronik dan jaringannya adalah tindakan melanggar hukum dan akan ditindak sesuai hukum yang berlaku di Indonesia</li>'
             html = html + '<li>Semua informasi resmi yang terkait dengan transaksi keuangan hanya dapat diperoleh dengan mengakses aplikasi Lelang Melalui website PT. Oto Bid Indonesia.</li>'
             html = html + '<li>Khusus untuk pembelian dalam lelang ini, maka Penawar/Pembeli tunduk pada hukum perdata dan hukum dagang yang berlaku di Indonesia.</li>'
+            
+            const socket = global.io;
+            socket.emit('sendBid', { text: 'Ini Dari Server'} )
         return res.send(this.response(true, html, null))
     }
 }

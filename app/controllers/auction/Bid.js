@@ -288,9 +288,8 @@ class Bid extends Controller {
             }
             else {
                 const nplCount = await rNpl.getRemaining(token.userid, params.auction_id)
-                const nplRemaining = await rBid.getRemaining(token.userid, params.auction_id)
-
-                if(nplRemaining.length < nplCount.length) {
+                
+                if(nplCount.length > 0) {
                     await this.model.insert({
                         'IdAuctions': params.auction_id, 
                         'NoLOT': params.no_lot, 

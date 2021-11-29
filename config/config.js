@@ -2,8 +2,11 @@ require('dotenv').config()
 const path = require('path')
 
 const config = {
-    port:process.env.APP_PORT,
-    app_name:process.env.APP_NAME,
+    port: process.env.APP_PORT,
+    port_https: process.env.APP_PORT_HTTPS, 
+    app_name: process.env.APP_NAME,
+    cert_file: process.env.CERT_FILE,
+    key_file: process.env.KEY_FILE,
     app_path: path.resolve('app'),
     controller_path: path.resolve('app/controllers'),
     model_path: path.resolve('app/models'),
@@ -26,10 +29,10 @@ const config = {
         pass: process.env.MAIL_PASSWORD
     },
     images: {
-        unit: 'https://otobid.co.id/img/unit/',
-        default_unit: 'https://otobid.co.id/img/not_image.jpg',
-        user: 'https://otobid.co.id/upload/document/user/',
-        document_unit: 'https://otobid.co.id/upload/dokumeninternal/'
+        unit: 'https://images-mobileapp.otobid.co.id/img/unit/',
+        default_unit: 'https://images-mobileapp.otobid.co.id/img/not_image.jpg',
+        user: 'https://images-mobileapp.otobid.co.id/upload/document/user/',
+        document_unit: 'https://images-mobileapp.otobid.co.id/upload/dokumeninternal/'
     },
     path: {
         user: '/usr/src/upload/document/user',
