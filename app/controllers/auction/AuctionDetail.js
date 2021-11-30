@@ -3,12 +3,14 @@ const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const variable = require(path.resolve('app/utils/variable'))
+const helper = require(path.resolve('app/utils/helper'))
 const redis = require(path.resolve('config/redis'))
 const table = require(path.resolve('config/database')).tables
 
 const Controller = require(config.controller_path + '/Controller')
 const auctionDetailModel = require(config.model_path + '/m_auction_detail')
 const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
+const bidRepo =
 
 class AuctionDetail extends Controller {
     constructor() {
@@ -205,6 +207,60 @@ class AuctionDetail extends Controller {
             let id = params.id
             
             let m = await this.auctionDetailRepo.getLiveAuctionDetail(id)
+            const response = {
+                auction_id: m.IdAuctions,
+                unit_id: m.IdUnit,
+                price: helper.currencyFormat(m.,
+    "panggilan": 0,
+    "new": 1,
+    "unit": {
+      "IdAuctions": "TRL-002",
+      "Online": "floor",
+      "NoLot": "007",
+      "HargaLimit": "60.000.000",
+      "IdUnit": "191018091214",
+      "NoPolisi": "BM 1966 TV",
+      "Merk": "daihatsu",
+      "Tipe": "F601 RV-GMDFJJ",
+      "Tahun": "2008",
+      "Transmisi": "M/T",
+      "Warna": "Merah Metalik",
+      "Jenis": "mobil",
+      "GradeMesin": "E",
+      "GradeInterior": "E",
+      "GradeExterior": "E",
+      "TglBerlakuSTNK": null,
+      "TglBerlakuPajak": null,
+      "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100741-3.jpg"
+    },
+    "user_id": null,
+    "close": false,
+    "npl": null,
+    "galleries": [
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100741-3.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100733-0.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100737-1.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100737-2.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100741-4.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100745-5.jpg"
+      },
+      {
+        "image": "https://images-mobileapp.otobid.co.id/img/unit/191018091214-191018100749-6.jpg"
+      }
+    ]
+  }
+            }
             return res.send(this.response(true, m, null))            
         }
         catch(err) {
