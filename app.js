@@ -9,12 +9,13 @@ const http = require('http').Server(app)
 const https = require('https')
 const cors = require('cors')
 
-const credentials = {
-    cert: fs.readFileSync(config.cert_file),
-    key: fs.readFileSync(config.key_file),
+if (config.is_active_https !== 'false') {
+    const credentials = {
+        cert: fs.readFileSync(config.cert_file),
+        key: fs.readFileSync(config.key_file),
+    }
+    const httpsServer = https.createServer(credentials, app)
 }
-
-const httpsServer = https.createServer(credentials, app)
 
 app.use(cors({
     origin: '*'
@@ -42,6 +43,9 @@ require('./config/socket')(io)
 http.listen(port, function() {
     console.log(`Example app listening at http://localhost:${port}`)
 })
-httpsServer.listen(portHttps, function() {
-    console.log(`Listening Https at https://localhost:${portHttps}`)
-})
+
+if (config.is_active_https !== 'false') {
+    httpsServer.listen(portHttps, function() {
+        console.log(`Listening Https at https://localhost:${portHttps}`)
+    })
+}

@@ -9,6 +9,7 @@ module.exports = function(app, config) {
     const brand = require(config.controller_path + '/masters/Brand')
     const bid = require(config.controller_path + '/auction/Bid')
     const general = require(config.controller_path + '/masters/General')
+    const socket = require(config.controller_path + '/socket/Socket')
 
     const routes = {
         user : new user(),
@@ -126,5 +127,10 @@ module.exports = function(app, config) {
     app.get('/general/server-time', (req, res)=> {
         let controller = new general()
         controller.getServerTime(req, res)
+    })
+
+    app.post('/socket/set-bid', (req, res) => {
+        let controller = new socket()
+        controller.setBid(req, res)
     })
 }

@@ -7,6 +7,7 @@ const config = {
     app_name: process.env.APP_NAME,
     cert_file: process.env.CERT_FILE,
     key_file: process.env.KEY_FILE,
+    is_active_https: process.env.IS_ACTIVE_HTTPS || 'false',
     app_path: path.resolve('app'),
     controller_path: path.resolve('app/controllers'),
     model_path: path.resolve('app/models'),
