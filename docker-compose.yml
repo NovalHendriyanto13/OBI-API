@@ -6,11 +6,11 @@ services:
     restart: always
     command: redis-server
     ports: 
-      - '6379:6379'
+      - '6378:6378'
     environment: 
       - REDIS_REPLICATION_MODE=master
     expose: 
-      - '6379'
+      - '6378'
     networks: 
       - backend
     volumes: 
@@ -32,10 +32,12 @@ services:
       - ./app:/usr/src/app/app
       - ./upload/document/user:/usr/src/upload/document/user
       - ./upload/struck:/usr/src/upload/struck
+      - /home/otobidco/ssl:/usr/src/ssl
     networks: 
       - backend
     ports:
-      - 3000:3000
+      - 3030:3030
+      - 3333:3333
     command: npm run dev
 
   # db:

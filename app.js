@@ -3,9 +3,15 @@ const config = require('./config/config')
 const app = express()
 const fs = require('fs')
 const port = config.port
+const portHttps = config.port_https
 const bodyParser = require('body-parser')
-var http = require('http').Server(app)
+const http = require('http').Server(app)
+const https = require('https')
+const cors = require('cors')
 
+app.use(cors({
+    origin: '*'
+}))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 var io = require('socket.io')(http,{
@@ -22,9 +28,21 @@ app.get('/', (req, res) => {
 app.get('/socket', function(req, res) {
     res.sendFile(__dirname + '/app/views/socket.html');
 });
- 
+
+global.io = io
 require('./config/routes')(app, config)
 require('./config/socket')(io)
 http.listen(port, function() {
     console.log(`Example app listening at http://localhost:${port}`)
 })
+
+if (config.is_active_https !== 'false') {
+    const credentials = {
+        cert: fs.readFileSync(config.cert_file),
+        key: fs.readFileSync(config.key_file),
+    }
+    const httpsServer = https.createServer(credentials, app)
+    httpsServer.listen(portHttps, function() {
+        console.log(`Listening Https at https://localhost:${portHttps}`)
+    })
+}
