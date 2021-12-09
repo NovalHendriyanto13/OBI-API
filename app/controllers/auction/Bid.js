@@ -479,13 +479,9 @@ class Bid extends Controller {
     }
 
     async sendToMobile(req) {
-        const file = path.resolve('app/last_live.txt')
-        const initFile = path.resolve('app/init_live.txt')
         
         const { auctionId, unitId, price, panggilan, isNew, close, npl, userId } = req
-        const fread = fs.readFileSync(file);
-        const k = auctionId.replace('-','') + unitId
-        const content = {};
+        const socket = global.io
 
         const rAuctionDetail = new auctionDetailRepo()
         const rUnitImage = new unitImageRepo()
@@ -503,44 +499,21 @@ class Bid extends Controller {
             unit[0]['HargaLimit'] = helper.currencyFormat(limitPrice)
             unitInfo = unit[0]
         }
-        if (fread == '') {
-            content[auctionId] = []
-            content[auctionId][k] = {
-                auction_id: auctionId,
-                unit_id: unitId,
-                price: priceFormated,
-                panggilan,
-                new: isNew,
-                unit: unitInfo,
-                user_id: userId,
-                close,
-                npl,
-                galleries: galleries
-            };
-        }
-        else {
-            if (typeof content[auctionId] !== 'undefined') {
-                delete content[auctionId];
-            }
-            content[auctionId] = {}
-            content[auctionId][k] = {
-                auction_id: auctionId,
-                unit_id: unitId,
-                price: priceFormated,
-                panggilan,
-                new: isNew,
-                unit: unitInfo,
-                user_id: userId,
-                close,
-                npl,
-                galleries
-            };
-        }
-        const jsonString = JSON.stringify(content)
-        fs.writeFileSync(file, jsonString)
+        const content = {
+            auction_id: auctionId,
+            unit_id: unitId,
+            price: priceFormated,
+            panggilan,
+            new: isNew,
+            unit: unitInfo,
+            user_id: userId,
+            close,
+            npl,
+            galleries: galleries
+        };
         
-        const jsonInitString = JSON.stringify(content)
-        fs.writeFileSync(initFile, jsonInitString)
+        socket.emit(`setBid/${auctionId}`, { data: content } )
+
     }
 }
 

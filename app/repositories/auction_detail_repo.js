@@ -155,6 +155,7 @@ class AuctionDetailRepo {
         table.auction + '.Online, ' +
         table.auction_detail + '.NoLot,' +
         table.auction_detail + '.HargaLimit,' +
+        table.auction_detail + '.Panggilan,' +
         table.unit + '.IdUnit, ' +
         table.unit + '.NoPolisi,' +
         table.unit + '.Merk, ' +
