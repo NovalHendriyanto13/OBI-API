@@ -12,7 +12,7 @@ class AuctionRepo {
     async getAuction(date) {
         let where = []
         where[table.auction + '.TglAuctions >= '] = date
-        where[table.auction + '.Online <>'] = 'floor'
+        // where[table.auction + '.Online <>'] = 'floor'
   
         const m = await (this.auction.select(
           table.auction + '.IdAuctions,' +
