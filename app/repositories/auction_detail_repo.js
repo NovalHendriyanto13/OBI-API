@@ -164,6 +164,7 @@ class AuctionDetailRepo {
         table.unit + '.Transmisi, ' +
         table.unit + '.Warna, ' +
         table.unit + '.Jenis, ' +
+        table.unit + '.Kilometer, ' +
         "IF(" + table.unit + ".GradeMesin = 4, 'A',IF("+ table.unit +".GradeMesin = 3, 'B',IF("+ table.unit +".GradeMesin = 2, 'C',IF("+ table.unit +".GradeMesin = 1, 'D','E')))) as GradeMesin, " +
         "IF(" + table.unit + ".GradeInterior = 4, 'A',IF("+ table.unit +".GradeInterior = 3, 'B',IF("+ table.unit +".GradeInterior = 2, 'C',IF("+ table.unit +".GradeInterior = 1, 'D','E')))) as GradeInterior, " +
         "IF(" + table.unit + ".GradeExterior = 4, 'A',IF("+ table.unit +".GradeExterior = 3, 'B',IF("+ table.unit +".GradeExterior = 2, 'C',IF("+ table.unit +".GradeExterior = 1, 'D','E')))) as GradeExterior, " +

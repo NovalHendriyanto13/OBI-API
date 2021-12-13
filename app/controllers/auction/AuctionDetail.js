@@ -216,9 +216,9 @@ class AuctionDetail extends Controller {
                 const getLastBid = await bidRepository.maxBid(id, dataUnit['IdUnit'], dataUnit['NoLot'])
                 
                 let userId = null
-                let price = helper.currencyFormat(dataUnit['HargaLimit'])
+                let price = dataUnit['HargaLimit'] > 0? helper.currencyFormat(dataUnit['HargaLimit']) : 0
                 if (getLastBid.length > 0) {
-                    price = helper.currencyFormat(getLastBid.Nominal)
+                    price = getLastBid.Nominal > 0 ? helper.currencyFormat(getLastBid.Nominal) : 0
                     userId = getLastBid.UserID
                 }
                 const galleries = await galleryRepo.getList(dataUnit['IdUnit'])
@@ -240,6 +240,7 @@ class AuctionDetail extends Controller {
                         Tahun: dataUnit['Tahun'],
                         Transmisi: dataUnit['Transmisi'],
                         Warna: dataUnit['Warna'],
+                        Kilometer: dataUnit['Kilometer'],
                         Jenis: dataUnit['Jenis'],
                         GradeMesin: dataUnit['GradeMesin'],
                         GradeInterior: dataUnit['GradeInterior'],
