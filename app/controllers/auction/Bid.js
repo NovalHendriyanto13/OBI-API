@@ -214,8 +214,6 @@ class Bid extends Controller {
             const rAuctionDetail = new auctionDetailRepo()
             const rBid = new bidRepo()
             
-            console.log(params);
-            
             const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
             if (validNPL == null || validNPL.length <= 0) {
                 throw new Error('Invalid NPL Number')
