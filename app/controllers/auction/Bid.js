@@ -195,7 +195,6 @@ class Bid extends Controller {
             }
 
             var params = req.body
-            params.bid_price = 0
             const rules = {
                 npl: 'required',
                 auction_id: 'required',
@@ -214,6 +213,8 @@ class Bid extends Controller {
             const rNpl = new nplRepo()
             const rAuctionDetail = new auctionDetailRepo()
             const rBid = new bidRepo()
+            
+            console.log(params);
             
             const validNPL = await rNpl.getValidNpl(token.userid, params.npl, params.auction_id, type)
             if (validNPL == null || validNPL.length <= 0) {

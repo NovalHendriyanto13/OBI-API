@@ -218,7 +218,7 @@ class AuctionDetail extends Controller {
                 let userId = null
                 let price = dataUnit['HargaLimit'] > 0? helper.currencyFormat(dataUnit['HargaLimit']) : 0
                 if (getLastBid.length > 0) {
-                    price = getLastBid.Nominal > 0 ? helper.currencyFormat(getLastBid.Nominal) : 0
+                    price = getLastBid[0]['Nominal'] >= 0 ? helper.currencyFormat(getLastBid[0]['Nominal']) : 0
                     userId = getLastBid.UserID
                 }
                 const galleries = await galleryRepo.getList(dataUnit['IdUnit'])
