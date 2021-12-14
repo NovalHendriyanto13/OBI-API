@@ -65,6 +65,7 @@ class NplRepo {
             Jenis: type,
             NPL: nplNo,
         });
+
         return m
     }
 

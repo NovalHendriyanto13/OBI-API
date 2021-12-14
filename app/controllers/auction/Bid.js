@@ -195,7 +195,6 @@ class Bid extends Controller {
             }
 
             var params = req.body
-            params.bid_price = 0
             const rules = {
                 npl: 'required',
                 auction_id: 'required',
