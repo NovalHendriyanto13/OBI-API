@@ -147,8 +147,12 @@ class AuctionDetailRepo {
 
   async getLiveAuctionDetail(idAuction) {
     
+    const date = helper.dateNow()
+    const timeNow = helper.timeNow()
     let where = []
     where[table.auction + '.IdAuctions ='] = idAuction
+    where[table.auction + '.TglAuctions >= '] = date
+    where[table.auction + '.StartTime <= '] = `${date} ${timeNow}`
     where[table.auction_detail + '.Open ='] = 1
     where[table.auction_detail + '.Close ='] = 1
     
