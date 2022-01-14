@@ -551,7 +551,6 @@ class Bid extends Controller {
         };
         
         socket.emit(`setBid/${auctionId}`, { data: content } )
-
     }
 }
 
