@@ -87,6 +87,32 @@ class BidRepo {
 
         return m
     }
+
+    async getBidByAuctionUnit(auctionId, unitId, noLot) {
+        const m = await (this.bid.select("UserID, Nominal, DATE_FORMAT(BidTime, '%e %M %Y %H:%i:%s') AS BidTime, Online"))
+            .get({
+                'IdUnit': unitId,
+                'IdAuctions': auctionId,
+                'NoLOT': noLot,
+            }, 'BidTime Desc')
+
+        return m
+    }
+
+    async getUnitByNpl(auctionId, noLot) {
+        const m = await (this.bid.select(
+            table.unit + '.Merk, ' + 
+            table.unit + '.Tipe, ' +
+            table.bid + '.Nominal'
+        ))
+        .join(table.unit, table.unit + '.IdUnit = ' + table.bid + '.IdUnit')
+        .getOne({
+            'IdAuctions': auctionId,
+            'NoLOT': noLot,
+        }, `${table.bid}.BidTime DESC`)
+        
+        return m;
+    }
     
 }
 

@@ -4,6 +4,7 @@ const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 
 const Controller = require(config.controller_path + '/Controller')
+const auctionRepo = require(config.repo_path + '/auction_repo')
 
 class Socket extends Controller {
     constructor() {
@@ -30,9 +31,12 @@ class Socket extends Controller {
 
     async setBid(req, res) {
         const { data, auctionId } = req.body
-        const socket = global.io;
-        socket.emit(`setBid/${auctionId}`, { data: data } )
-
+        const rAuction = new auctionRepo()
+        let m = await rAuction.getAuctionNow(auctionId)
+        if (m.length > 0) {
+            const socket = global.io;
+            socket.emit(`setBid/${auctionId}`, { data: data } )
+        }
         return res.send(this.response(true, req.body, null))
     }
 }

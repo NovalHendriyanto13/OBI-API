@@ -24,7 +24,7 @@ class NplRepo {
         ))
         .join(table.auction, table.npl + '.IdAuctions = ' + table.auction + '.IdAuctions')
         .get({
-            UserID: userId
+            'ms_npl.UserID': userId
         }, table.auction + '.TglAuctions DESC')
 
         return m

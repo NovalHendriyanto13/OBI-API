@@ -4,6 +4,7 @@ const fs = require('fs')
 const formidable = require('formidable')
 const dateformat = require('dateformat')
 const { randomInt } = require('../../utils/helper')
+const bidRepo = require('../../repositories/bid_repo')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
 const helper = require(path.resolve('app/utils/helper'))
@@ -32,10 +33,12 @@ class Npl extends Controller {
 
             const n = new nplRepo()
             const adr = new auctionDetailRepo()
+            const br = new bidRepo()
             let m = await n.getList(token.userid)
             let dataRes = []
             for(let i = 0, {length} = m; i < length; i++) {
                 let data = m[i]
+                let dataUnit = null;
                 if (data.Closed == 0 && data.Verifikasi == 0) {
                     data.Status = 'Belum Verifikasi'
                 }
@@ -51,6 +54,7 @@ class Npl extends Controller {
                         NPL: data.NPL,
                         UserID: token.userid
                     })
+                    const unit = await br.getUnitByNpl(data.IdAuctions, data.NoLot)
                     if (wanpres.length > 0) {
                         if (wanpres.Paid == 2) {
                             data.Status = 'Wanpres'
@@ -62,7 +66,9 @@ class Npl extends Controller {
                     else {
                         data.Status = 'Menang'
                     }
+                    dataUnit = unit
                 }
+                data.unit = dataUnit
                 dataRes.push(data)
             }
             

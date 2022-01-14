@@ -133,4 +133,9 @@ module.exports = function(app, config) {
         let controller = new socket()
         controller.setBid(req, res)
     })
+
+    app.post('/history-auction-bid', (req, res) => {
+        let controller = new bid()
+        controller.historyBid(req, res)
+    })
 }
