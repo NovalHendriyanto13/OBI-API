@@ -102,13 +102,14 @@ class BidRepo {
     async getUnitByNpl(auctionId, noLot) {
         const m = await (this.bid.select(
             table.unit + '.Merk, ' + 
-            table.unit + '.Tipe'
+            table.unit + '.Tipe, ' +
+            table.bid + '.Nominal'
         ))
         .join(table.unit, table.unit + '.IdUnit = ' + table.bid + '.IdUnit')
         .getOne({
             'IdAuctions': auctionId,
             'NoLOT': noLot,
-        })
+        }, `${table.bid}.BidTime DESC`)
         
         return m;
     }
