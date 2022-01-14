@@ -2,10 +2,9 @@
 const path = require('path')
 const config = require(path.resolve('config/config'))
 const util = require(path.resolve('app/utils/util'))
-const helper = require(path.resolve('app/utils/helper'))
 
 const Controller = require(config.controller_path + '/Controller')
-const auctionDetailRepo = require(config.repo_path + '/auction_detail_repo')
+const auctionRepo = require(config.repo_path + '/auction_repo')
 
 class Socket extends Controller {
     constructor() {
@@ -32,8 +31,8 @@ class Socket extends Controller {
 
     async setBid(req, res) {
         const { data, auctionId } = req.body
-        const rAuctionDetail = new auctionDetailRepo
-        const m = await rAuctionDetail.getLiveAuctionDetail(auctionId)
+        const rAuction = new auctionRepo()
+        let m = await rAuction.getAuctionNow(auctionId)
         if (m.length > 0) {
             const socket = global.io;
             socket.emit(`setBid/${auctionId}`, { data: data } )
